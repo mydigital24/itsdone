@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>its_done</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✓</text></svg>">
+<style>
+  :root{
+    --bg: #FAF8F4;
+    --bg-elevated: #FFFFFF;
+    --ink: #23241F;
+    --ink-soft: #6E6D66;
+    --ink-faint: #A9A79C;
+    --line: #E9E5DB;
+    --sage: #6E8B74;
+    --sage-soft: #E5EDE3;
+    --amber: #B98A3D;
+    --amber-soft: #F3E9D6;
+    --danger: #C15B4A;
+    --blue: #3E6FB0;
+    --blue-soft: #E2EBF5;
+    --orange: #D3812E;
+    --orange-soft: #F7E8D6;
+    --plan: #6C63B5;
+    --plan-soft: #E8E6F4;
+    --radius: 18px;
+    --radius-sm: 12px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --dock-radius: 28px;
+    font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  }
+  .dark{
+    --bg: #111110;
+    --bg-elevated: #1C1C1A;
+    --ink: #EDEDE8;
+    --ink-soft: #93938C;
+    --ink-faint: #64645E;
+    --line: #2B2B28;
+    --sage: #7FAA87;
+    --sage-soft: #1E2E22;
+    --amber-soft: #2E2414;
+    --blue-soft: #14202E;
+    --orange-soft: #2E1E14;
+    --plan-soft: #1C1A2E;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    transition: background .3s, color .3s;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:var(--bg);
+  }
+
+  header{
+    padding: calc(14px + var(--safe-top)) 20px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-shrink:0;
+  }
+  header h1{
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    margin:0;
+  }
+  .icon-btn{
+    width:36px; height:36px;
+    border-radius:50%;
+    border:none;
+    background:var(--bg-elevated);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft);
+    cursor:pointer;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04);
+    transition: background .15s;
+  }
+  .icon-btn:active{ transform:scale(.92); }
+  .icon-btn svg{width:18px;height:18px;}
+
+  .subline{
+    padding: 0 20px 14px;
+    font-size:14px;
+    color:var(--ink-soft);
+    flex-shrink:0;
+  }
+
+  main{
+    flex:1;
+    overflow-y:auto;
+    padding: 4px 16px calc(100px + var(--safe-bottom));
+    -webkit-overflow-scrolling:touch;
+  }
+  .empty-state{
+    text-align:center;
+    padding:70px 30px;
+    color:var(--ink-faint);
+  }
+  .empty-state .glyph{font-size:34px; margin-bottom:10px; opacity:.6;}
+  .empty-state p{font-size:15px; line-height:1.5; margin:0;}
+
+  .task-row-wrap{
+    position:relative;
+    margin-bottom:10px;
+    border-radius:var(--radius);
+  }
+  .swipe-bg{
+    position:absolute; inset:0;
+    display:flex; align-items:center;
+    font-size:14.5px; font-weight:700;
+    color:#fff;
+    padding:0 22px;
+    border-radius:var(--radius);
+    opacity:0;
+    transform:scale(.94);
+    transition: opacity .15s ease, transform .15s ease;
+    pointer-events:none;
+  }
+  .swipe-bg .swipe-icon{
+    display:flex; align-items:center; gap:8px;
+    transform:scale(.85);
+    transition:transform .15s ease;
+  }
+  .swipe-bg.left{ background:var(--blue); justify-content:flex-start; }
+  .swipe-bg.right{ background:var(--orange); justify-content:flex-end; }
+  .swipe-bg.armed{ opacity:1; transform:scale(1); }
+  .swipe-bg.armed .swipe-icon{ transform:scale(1.08); }
+  .swipe-bg .swipe-icon.super{ display:none; }
+  .swipe-bg.super-mode{ background:var(--plan); }
+  .swipe-bg.super-mode .swipe-icon.normal{ display:none; }
+  .swipe-bg.super-mode .swipe-icon.super{ display:flex; }
+  .swipe-bg.inbox-bg{ background:var(--ink-soft); justify-content:flex-start; }
+  .swipe-bg.planner-bg{ background:var(--plan); justify-content:flex-end; }
+
+  .task-row{
+    position:relative;
+    background:var(--bg-elevated);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    touch-action:pan-y;
+    transition: transform .32s cubic-bezier(.22,1,.36,1), box-shadow .2s ease;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+    will-change:transform;
+  }
+  .task-row.dragging{ transition:none; box-shadow:0 6px 16px rgba(0,0,0,0.10); }
+
+  .check{
+    width:23px; height:23px;
+    border-radius:50%;
+    border:1.8px solid var(--line);
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .check svg{width:13px;height:13px; opacity:0; transition:opacity .12s;}
+  .task-row.done .check{ background:var(--sage); border-color:var(--sage); }
+  .task-row.done .check svg{ opacity:1; }
+  .task-row.done .task-text{ color:var(--ink-faint); text-decoration:line-through; }
+
+  .task-main{ flex:1; min-width:0; cursor:pointer; }
+  .task-text{ font-size:16px; line-height:1.35; word-break:break-word; }
+  .task-meta{
+    display:flex; align-items:center; gap:6px;
+    margin-top:3px; font-size:12.5px; color:var(--ink-faint);
+  }
+  .task-meta.overdue{ color:var(--danger); }
+  .task-meta.today{ color:var(--sage); }
+
+  .row-actions{
+    display:flex; gap:6px; flex-shrink:0;
+  }
+  .row-actions button{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:none;
+    background:var(--bg);
+    color:var(--ink-soft);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease;
+  }
+  .row-actions button:active{ transform:scale(.88); }
+  .row-actions svg{width:14px;height:14px;}
+  .row-actions button.to-today{ background:var(--blue-soft); color:var(--blue); }
+  .row-actions button.to-later{ background:var(--orange-soft); color:var(--orange); }
+  .row-actions button.to-inbox{ background:var(--sage-soft); color:var(--sage); }
+  .row-actions button.to-planner{ background:var(--plan-soft); color:var(--plan); }
+
+  .nudge{
+    margin: 0 4px 14px;
+    background:var(--amber-soft);
+    border-radius:var(--radius-sm);
+    padding:12px 14px;
+    font-size:13.5px;
+    color:#7A5A22;
+    display:flex; align-items:center; gap:10px;
+    line-height:1.4;
+  }
+  .nudge svg{width:16px;height:16px;flex-shrink:0;}
+  .dark .nudge{ color: #C9A96A; }
+
+  nav{
+    position:absolute; left:12px; right:12px; bottom:0;
+    padding: 8px 6px calc(8px + var(--safe-bottom));
+    background: rgba(250,248,244,0.78);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(233,229,219,0.5);
+    border-radius: var(--dock-radius);
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+    margin-bottom: 10px;
+    z-index:10;
+  }
+  .dark nav{
+    background: rgba(28,28,26,0.8);
+    border-color: rgba(43,43,40,0.6);
+  }
+  .nav-btn{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; cursor:pointer;
+    color:var(--ink-faint);
+    font-size:10px;
+    padding:6px 12px;
+    position:relative;
+    border-radius:18px;
+    transition: color .15s, background .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nav-btn svg{ width:22px; height:22px; stroke-width:1.8; }
+  .nav-btn.active{ color:var(--ink); background:rgba(0,0,0,0.05); }
+  .dark .nav-btn.active{ background:rgba(255,255,255,0.08); }
+  .nav-badge{
+    position:absolute; top:2px; right:4px;
+    background:var(--amber);
+    color:#fff;
+    font-size:9px; font-weight:700;
+    min-width:15px; height:15px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+  }
+
+  .fab{
+    position:absolute;
+    right:24px;
+    bottom: calc(88px + var(--safe-bottom));
+    width:54px; height:54px;
+    border-radius:50%;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    box-shadow:0 6px 20px rgba(0,0,0,0.18);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    z-index:5;
+    transition: transform .15s, background .15s;
+  }
+  .fab:active{ transform:scale(.9); }
+  .fab svg{width:24px;height:24px;}
+
+  .overlay{
+    position:absolute; inset:0;
+    background:rgba(20,18,14,0.32);
+    display:flex; align-items:flex-end;
+    z-index:20;
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .sheet{
+    background:var(--bg-elevated);
+    width:100%;
+    border-radius:24px 24px 0 0;
+    padding: 10px 22px calc(26px + var(--safe-bottom));
+    transform:translateY(100%);
+    transition:transform .3s cubic-bezier(.32,.72,0,1);
+    max-height:80vh;
+    overflow-y:auto;
+  }
+  .overlay.show .sheet{ transform:translateY(0); }
+  .sheet-handle{
+    width:36px; height:5px; background:var(--line);
+    border-radius:3px; margin:6px auto 16px;
+  }
+  .sheet h2{ font-size:20px; margin:0 0 4px; letter-spacing:-0.01em; }
+  .sheet .sheet-sub{ color:var(--ink-soft); font-size:14px; margin:0 0 18px; }
+
+  textarea.task-input{
+    width:100%;
+    border:none;
+    background:var(--bg);
+    border-radius:var(--radius-sm);
+    padding:14px;
+    font-size:16px;
+    font-family:inherit;
+    resize:none;
+    min-height:56px;
+    margin-bottom:14px;
+  }
+  textarea.task-input:focus{ outline:2px solid var(--sage); outline-offset:1px; }
+
+  .due-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--bg); border-radius:var(--radius-sm);
+    padding:12px 14px; margin-bottom:18px;
+  }
+  .due-row label{ font-size:14.5px; color:var(--ink-soft); display:flex; align-items:center; gap:8px;}
+  .due-row input[type="datetime-local"]{
+    border:none; background:transparent; font-family:inherit; font-size:14.5px; color:var(--ink);
+  }
+
+  .sheet-actions{ display:flex; gap:10px; }
+  .btn{
+    flex:1;
+    padding:14px;
+    border-radius:var(--radius-sm);
+    border:none;
+    font-size:15.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition: transform .12s;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn-primary{ background:var(--ink); color:#fff; }
+  .btn-secondary{ background:var(--bg); color:var(--ink-soft); }
+
+  .review-stats{
+    display:flex; gap:10px; margin-bottom:18px;
+  }
+  .stat-card{
+    flex:1; background:var(--bg); border-radius:var(--radius-sm);
+    padding:16px 14px; text-align:center;
+  }
+  .stat-num{ font-size:26px; font-weight:700; letter-spacing:-0.02em; }
+  .stat-label{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .review-list{ margin-bottom:18px; }
+  .review-list .task-row{ margin-bottom:8px; box-shadow:none; border:1px solid var(--line); }
+
+  .progress-track{
+    height:8px; border-radius:5px; background:var(--bg);
+    overflow:hidden; margin-bottom:18px;
+  }
+  .progress-fill{
+    height:100%; border-radius:5px;
+    background:linear-gradient(90deg, var(--sage), var(--blue));
+    width:0%;
+    transition: width .5s cubic-bezier(.22,1,.36,1);
+  }
+  .review-celebrate{
+    text-align:center; padding:14px 10px 18px;
+  }
+  .review-celebrate .glyph{ font-size:32px; margin-bottom:8px; }
+  .review-celebrate p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .roadmap-block{
+    background:var(--bg);
+    border-radius:var(--radius-sm);
+    padding:14px;
+    margin-bottom:18px;
+  }
+  .roadmap-title{
+    font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--ink-faint); margin-bottom:10px;
+  }
+  .roadmap-item{
+    display:flex; align-items:center; gap:10px;
+    padding:7px 0;
+    font-size:14px;
+  }
+  .roadmap-item .dot{
+    width:7px; height:7px; border-radius:50%; background:var(--orange); flex-shrink:0;
+  }
+  .roadmap-item .rm-text{ flex:1; color:var(--ink); }
+  .roadmap-item .rm-when{ color:var(--ink-faint); font-size:12.5px; flex-shrink:0; }
+
+  .planner-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 2px 16px;
+  }
+  .planner-header .month-label{ font-size:17px; font-weight:700; letter-spacing:-0.01em; }
+  .planner-nav-btn{
+    width:32px; height:32px; border-radius:50%;
+    background:var(--bg-elevated); border:none;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft); cursor:pointer;
+  }
+  .planner-nav-btn svg{ width:15px; height:15px; }
+  .planner-grid{
+    display:grid; grid-template-columns:repeat(7,1fr);
+    gap:5px; margin-bottom:22px;
+  }
+  .planner-weekday{
+    text-align:center; font-size:11px; color:var(--ink-faint);
+    padding-bottom:6px; font-weight:600;
+  }
+  .planner-day{
+    aspect-ratio:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:12px; font-size:14px; color:var(--ink);
+    cursor:pointer; position:relative;
+    background:var(--bg-elevated);
+    border:1.4px solid transparent;
+    transition: background .15s ease, color .15s ease;
+  }
+  .planner-day.other-month{ opacity:.32; }
+  .planner-day.today{ border-color:var(--sage); }
+  .planner-day.selected{ background:var(--ink); color:#fff; }
+  .dark .planner-day.selected{ background:var(--bg-elevated); color:var(--ink); border-color:var(--sage); }
+  .planner-day .dot-row{ display:flex; gap:2px; margin-top:4px; height:5px; }
+  .planner-day .pdot{ width:4px; height:4px; border-radius:50%; background:var(--orange); }
+  .planner-day.selected .pdot{ background:#fff; }
+  .dark .planner-day.selected .pdot{ background:var(--orange); }
+  .planner-daylist-title{
+    font-size:12.5px; font-weight:700; color:var(--ink-faint);
+    margin:0 4px 12px; text-transform:uppercase; letter-spacing:.04em;
+  }
+
+  .mehr-menu{
+    display:flex; flex-direction:column; gap:12px;
+    padding: 10px 0;
+  }
+  .mehr-card{
+    background:var(--bg-elevated);
+    border-radius:var(--radius);
+    padding:16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    cursor:pointer;
+    border:1px solid var(--line);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .mehr-card:active{ transform:scale(.98); }
+  .mehr-card .mc-icon{
+    width:40px; height:40px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .mehr-card .mc-icon.review{ background:var(--sage-soft); }
+  .mehr-card .mc-icon.roadmap{ background:var(--orange-soft); }
+  .mehr-card .mc-icon.settings{ background:var(--blue-soft); }
+  .mehr-card .mc-icon.about{ background:var(--plan-soft); }
+  .mehr-card .mc-icon.theme{ background:var(--amber-soft); }
+  .mehr-card .mc-icon.clear{ background:rgba(193,91,74,0.15); }
+  .mehr-card .mc-text{ flex:1; }
+  .mehr-card .mc-text strong{ display:block; font-size:15px; margin-bottom:2px; }
+  .mehr-card .mc-text span{ font-size:12.5px; color:var(--ink-soft); }
+  .mehr-card .mc-arrow{ color:var(--ink-faint); font-size:18px; }
+
+  .settings-group{
+    margin-bottom:20px;
+  }
+  .settings-group label{
+    display:block;
+    font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-faint); margin-bottom:8px;
+  }
+  .settings-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .settings-row:last-child{ border-bottom:none; }
+  .settings-row .sr-label{ font-size:14.5px; }
+  .settings-row .sr-desc{ font-size:12px; color:var(--ink-soft); margin-top:1px; }
+
+  .toggle-wrap{
+    width:44px; height:26px; border-radius:13px;
+    background:var(--line); cursor:pointer;
+    position:relative; transition:background .2s;
+    flex-shrink:0;
+  }
+  .toggle-wrap.on{ background:var(--sage); }
+  .toggle-knob{
+    width:22px; height:22px; border-radius:50%;
+    background:#fff; position:absolute;
+    top:2px; left:2px;
+    transition:transform .2s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  }
+  .toggle-wrap.on .toggle-knob{ transform:translateX(18px); }
+
+  .danger-btn{
+    width:100%; padding:12px;
+    border-radius:var(--radius-sm);
+    border:1px solid rgba(193,91,74,0.2);
+    background:rgba(193,91,74,0.08);
+    color:var(--danger);
+    font-size:14px; font-weight:600;
+    cursor:pointer;
+    text-align:center;
+    transition: background .15s;
+  }
+  .danger-btn:active{ background:rgba(193,91,74,0.18); }
+
+  .toast{
+    position:absolute; left:50%; bottom:110px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff;
+    padding:10px 18px; border-radius:20px;
+    font-size:13.5px;
+    opacity:0; pointer-events:none;
+    transition:all .25s ease;
+    z-index:30;
+    white-space:nowrap;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* Roadmap View */
+  .rm-week{
+    margin-bottom:20px;
+  }
+  .rm-week-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .rm-week-label{
+    font-size:13px; font-weight:700;
+  }
+  .rm-week-range{
+    font-size:11px; color:var(--ink-faint);
+  }
+  .rm-task{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px;
+    background:var(--bg-elevated);
+    border-radius:var(--radius-sm);
+    margin-bottom:6px;
+    border-left:3px solid var(--sage);
+  }
+  .rm-task.overdue{ border-left-color:var(--danger); }
+  .rm-task.today-line{ border-left-color:var(--blue); }
+  .rm-task .rmt-text{ flex:1; font-size:14px; }
+  .rm-task .rmt-due{ font-size:11px; color:var(--ink-faint); flex-shrink:0; }
+
+  ::-webkit-scrollbar{ display:none; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1 id="listTitle">Inbox</h1>
+    <button class="icon-btn" id="reviewBtn" title="Tages-Review">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </button>
+  </header>
+  <div class="subline" id="subline"></div>
+
+  <main id="listContainer"></main>
+
+  <button class="fab" id="fabAdd" title="Neue Aufgabe">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <nav>
+    <button class="nav-btn active" data-list="inbox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v10l-3 6H7l-3-6V4z"/><path d="M4 14h5l1.5 3h3L15 14h5"/></svg>
+      <span>Inbox</span>
+    </button>
+    <button class="nav-btn" data-list="today">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+      <span>Heute</span>
+    </button>
+    <button class="nav-btn" data-list="later">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+      <span>Anstehend</span>
+      <span class="nav-badge" id="laterBadge" style="display:none;"></span>
+    </button>
+    <button class="nav-btn" data-list="planner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      <span>Planer</span>
+    </button>
+    <button class="nav-btn" data-list="mehr">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      <span>Mehr</span>
+    </button>
+  </nav>
+
+  <!-- Add sheet -->
+  <div class="overlay" id="addOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2>Neue Aufgabe</h2>
+      <p class="sheet-sub">Bei Fälligkeitsdatum direkt in Anstehend.</p>
+      <textarea class="task-input" id="taskInput" placeholder="Was steht an?" maxlength="280"></textarea>
+      <div class="due-row">
+        <label>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+          Fällig
+        </label>
+        <input type="datetime-local" id="dueInput">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-secondary" id="cancelAdd">Abbrechen</button>
+        <button class="btn btn-primary" id="confirmAdd">Hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit sheet -->
+  <div class="overlay" id="editOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2>Aufgabe bearbeiten</h2>
+      <p class="sheet-sub">Text und Fälligkeitsdatum anpassen.</p>
+      <textarea class="task-input" id="editInput" placeholder="Aufgabe" maxlength="280"></textarea>
+      <div class="due-row">
+        <label>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+          Fällig
+        </label>
+        <input type="datetime-local" id="editDueInput">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-secondary" id="cancelEdit">Abbrechen</button>
+        <button class="btn btn-primary" id="confirmEdit">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review sheet -->
+  <div class="overlay" id="reviewOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2 id="reviewTitle">Guten Morgen</h2>
+      <p class="sheet-sub" id="reviewSub">Das steht heute an.</p>
+      <div class="review-stats">
+        <div class="stat-card"><div class="stat-num" id="statDone">0</div><div class="stat-label">Erledigt</div></div>
+        <div class="stat-card"><div class="stat-num" id="statOpen">0</div><div class="stat-label">Offen</div></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="review-list" id="reviewList"></div>
+      <div class="roadmap-block" id="roadmapBlock" style="display:none;">
+        <div class="roadmap-title">Bald fällig</div>
+        <div id="roadmapList"></div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-primary" id="closeReview">Los geht's</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule sheet -->
+  <div class="overlay" id="scheduleOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2>Termin planen</h2>
+      <p class="sheet-sub" id="scheduleTaskText"></p>
+      <div class="due-row">
+        <label>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+          Fällig
+        </label>
+        <input type="datetime-local" id="scheduleDueInput">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-secondary" id="cancelSchedule">Abbrechen</button>
+        <button class="btn btn-primary" id="confirmSchedule">Übernehmen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const STORAGE_KEY = "klar_tasks_v2";
+  const META_KEY = "klar_meta_v2";
+  const NUDGE_DAYS = 3;
+
+  let tasks = load(STORAGE_KEY, []);
+  let meta = load(META_KEY, { lastReviewDate: null, lastLaterNudge: null, darkMode: false });
+  let currentList = "inbox";
+  let darkMode = meta.darkMode || false;
+
+  if(darkMode) document.body.classList.add("dark");
+
+  function load(key, fallback){
+    try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch(e){ return fallback; }
+  }
+  function save(){
+    meta.darkMode = darkMode;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    localStorage.setItem(META_KEY, JSON.stringify(meta));
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function todayStr(d){ d=d||new Date(); return d.toISOString().slice(0,10); }
+
+  function autoPromoteDueTasks(){
+    const now = new Date();
+    let changed = false;
+    tasks.forEach(t => {
+      if(!t.done && t.due && t.list === "later"){
+        if(new Date(t.due) <= now){ t.list = "today"; changed = true; }
+      }
+    });
+    if(changed) save();
+  }
+
+  const listContainer = document.getElementById("listContainer");
+  const listTitle = document.getElementById("listTitle");
+  const subline = document.getElementById("subline");
+  const laterBadge = document.getElementById("laterBadge");
+
+  function fmtDue(iso){
+    const d = new Date(iso);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const time = d.toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
+    if(isToday) return "Heute, " + time;
+    return d.toLocaleDateString("de-DE", {day:"2-digit", month:"short"}) + ", " + time;
+  }
+
+  function metaClass(t){
+    if(!t.due) return "";
+    const d = new Date(t.due);
+    if(d < new Date() && !t.done) return "overdue";
+    if(d.toDateString() === new Date().toDateString()) return "today";
+    return "";
+  }
+
+  // ---------- Planer ----------
+  let plannerDate = new Date();
+  let plannerSelected = todayStr();
+  const MONTH_NAMES = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+  function renderPlannerView(){
+    listTitle.textContent = "Planer";
+    subline.textContent = "Tippe auf einen Tag, um geplante Aufgaben zu sehen.";
+    listContainer.innerHTML = "";
+
+    const year = plannerDate.getFullYear();
+    const month = plannerDate.getMonth();
+
+    const header = document.createElement("div");
+    header.className = "planner-header";
+    header.innerHTML = `
+      <button class="planner-nav-btn" id="prevMonth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <span class="month-label">${MONTH_NAMES[month]} ${year}</span>
+      <button class="planner-nav-btn" id="nextMonth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+    `;
+    listContainer.appendChild(header);
+
+    const grid = document.createElement("div");
+    grid.className = "planner-grid";
+    ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(w=>{
+      const el = document.createElement("div"); el.className = "planner-weekday"; el.textContent = w; grid.appendChild(el);
+    });
+
+    const firstOfMonth = new Date(year, month, 1);
+    const startWeekday = (firstOfMonth.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const dueMap = {};
+    tasks.forEach(t=>{ if(t.due && !t.done){ const k=t.due.slice(0,10); dueMap[k]=(dueMap[k]||0)+1; } });
+
+    const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+    for(let i = 0; i < totalCells; i++){
+      const dayNum = i - startWeekday + 1;
+      let cellDate, otherMonth = false;
+      if(dayNum < 1){ cellDate = new Date(year, month-1, daysInPrevMonth+dayNum); otherMonth=true; }
+      else if(dayNum > daysInMonth){ cellDate = new Date(year, month+1, dayNum-daysInMonth); otherMonth=true; }
+      else { cellDate = new Date(year, month, dayNum); }
+      const key = todayStr(cellDate);
+      const cell = document.createElement("div");
+      cell.className = "planner-day" + (otherMonth?" other-month":"") + (key===todayStr()?" today":"") + (key===plannerSelected?" selected":"");
+      const count = dueMap[key]||0;
+      let dots = "";
+      for(let d=0; d<Math.min(count,3); d++) dots += '<span class="pdot"></span>';
+      cell.innerHTML = '<span>'+cellDate.getDate()+'</span><span class="dot-row">'+dots+'</span>';
+      cell.addEventListener("click", ()=>{ plannerSelected=key; render(); });
+      grid.appendChild(cell);
+    }
+    listContainer.appendChild(grid);
+
+    document.getElementById("prevMonth").addEventListener("click", ()=>{ plannerDate=new Date(year,month-1,1); render(); });
+    document.getElementById("nextMonth").addEventListener("click", ()=>{ plannerDate=new Date(year,month+1,1); render(); });
+
+    const dayTasks = tasks.filter(t=>t.due && t.due.slice(0,10)===plannerSelected);
+    const title = document.createElement("div"); title.className="planner-daylist-title";
+    const selD = new Date(plannerSelected+"T00:00:00");
+    title.textContent = selD.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long"});
+    listContainer.appendChild(title);
+
+    if(!dayTasks.length){
+      const empty = document.createElement("div"); empty.className="empty-state";
+      empty.innerHTML = '<div class="glyph">📅</div><p>Für diesen Tag ist nichts geplant.</p>';
+      listContainer.appendChild(empty);
+    } else {
+      dayTasks.sort((a,b)=>new Date(a.due)-new Date(b.due)).forEach(t=>listContainer.appendChild(renderRow(t,{simple:true,noActions:true})));
+    }
+  }
+
+  // ---------- Mehr-Ansicht ----------
+  function renderMehrView(){
+    listTitle.textContent = "Mehr";
+    subline.textContent = "Übersicht und Einstellungen";
+    listContainer.innerHTML = "";
+
+    const menu = document.createElement("div");
+    menu.className = "mehr-menu";
+
+    menu.innerHTML = `
+      <div class="mehr-card" id="mehrReview">
+        <div class="mc-icon review">📋</div>
+        <div class="mc-text"><strong>Tagesreview</strong><span>Heutige Aufgaben im Überblick</span></div>
+        <span class="mc-arrow">›</span>
+      </div>
+      <div class="mehr-card" id="mehrRoadmap">
+        <div class="mc-icon roadmap">🗺</div>
+        <div class="mc-text"><strong>Roadmap</strong><span>Anstehende Aufgaben im Wochen-Überblick</span></div>
+        <span class="mc-arrow">›</span>
+      </div>
+      <div class="mehr-card" id="mehrTheme">
+        <div class="mc-icon theme">${darkMode?'🌙':'☀️'}</div>
+        <div class="mc-text"><strong>Erscheinungsbild</strong><span>${darkMode?'Dunkles':'Helles'} Design</span></div>
+        <span class="mc-arrow">›</span>
+      </div>
+      <div class="mehr-card" id="mehrSettings">
+        <div class="mc-icon settings">⚙️</div>
+        <div class="mc-text"><strong>Einstellungen</strong><span>Verhalten, Daten & mehr</span></div>
+        <span class="mc-arrow">›</span>
+      </div>
+      <div class="mehr-card" id="mehrAbout">
+        <div class="mc-icon about">ℹ️</div>
+        <div class="mc-text"><strong>Über its_done</strong><span>Version 2.0 · Einfach erledigt.</span></div>
+        <span class="mc-arrow">›</span>
+      </div>
+    `;
+    listContainer.appendChild(menu);
+
+    document.getElementById("mehrReview").addEventListener("click", ()=>openReview(false));
+    document.getElementById("mehrRoadmap").addEventListener("click", renderRoadmapView);
+    document.getElementById("mehrTheme").addEventListener("click", toggleTheme);
+    document.getElementById("mehrSettings").addEventListener("click", openSettingsSheet);
+    document.getElementById("mehrAbout").addEventListener("click", ()=>showToast("its_done 2.0 — Einfach erledigt."));
+  }
+
+  // ---------- Roadmap View ----------
+  function renderRoadmapView(){
+    listTitle.textContent = "Roadmap";
+    subline.textContent = "Was in den nächsten Wochen ansteht.";
+    listContainer.innerHTML = "";
+
+    const now = new Date();
+    const upcoming = tasks.filter(t=>!t.done && t.due)
+      .sort((a,b)=>new Date(a.due)-new Date(b.due))
+      .filter(t=>new Date(t.due) >= new Date(now.getTime()-86400000));
+
+    if(!upcoming.length){
+      const empty = document.createElement("div"); empty.className="empty-state";
+      empty.innerHTML = '<div class="glyph">🗺</div><p>Keine anstehenden Aufgaben mit Termin.</p>';
+      listContainer.appendChild(empty);
+      return;
+    }
+
+    // Gruppiere nach Kalenderwochen
+    function getWeekStart(d){
+      const c = new Date(d); const day = c.getDay(); const diff = c.getDate() - day + (day===0?-6:1);
+      c.setDate(diff); c.setHours(0,0,0,0); return c;
+    }
+    function fmtWeekStart(d){
+      return d.toLocaleDateString("de-DE",{day:"2-digit",month:"short"});
+    }
+    function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+
+    const weeks = {};
+    upcoming.forEach(t=>{
+      const d = new Date(t.due);
+      const ws = getWeekStart(d).getTime();
+      if(!weeks[ws]) weeks[ws] = [];
+      weeks[ws].push(t);
+    });
+
+    const sortedWeeks = Object.keys(weeks).sort((a,b)=>a-b);
+    sortedWeeks.forEach(ws=>{
+      const wsDate = new Date(parseInt(ws));
+      const weDate = addDays(wsDate, 6);
+      const weekDiv = document.createElement("div"); weekDiv.className="rm-week";
+
+      const header = document.createElement("div"); header.className="rm-week-header";
+      const nowWeek = getWeekStart(now).getTime();
+      const label = (parseInt(ws) === nowWeek) ? "Diese Woche" :
+                    (parseInt(ws) === nowWeek + 7*86400000) ? "Nächste Woche" : "";
+      header.innerHTML = '<span class="rm-week-label">'+label||'Woche'+'</span><span class="rm-week-range">'+fmtWeekStart(wsDate)+' – '+fmtWeekStart(weDate)+'</span>';
+      weekDiv.appendChild(header);
+
+      weeks[ws].sort((a,b)=>new Date(a.due)-new Date(b.due)).forEach(t=>{
+        const d = new Date(t.due);
+        const isOverdue = d < now;
+        const isToday = d.toDateString() === now.toDateString();
+        const el = document.createElement("div");
+        el.className = "rm-task" + (isOverdue?" overdue":"") + (isToday?" today-line":"");
+        el.innerHTML = '<span class="rmt-text">'+escapeHtml(t.text)+'</span><span class="rmt-due">'+
+          (isOverdue?'Überfällig · ':isToday?'Heute · ':'')+fmtDue(t.due)+'</span>';
+        el.addEventListener("click", ()=>{
+          if(t.due){
+            plannerSelected = t.due.slice(0,10);
+            plannerDate = new Date(t.due.slice(0,10)+"T12:00:00");
+            currentList = "planner"; render();
+          }
+        });
+        weekDiv.appendChild(el);
+      });
+      listContainer.appendChild(weekDiv);
+    });
+  }
+
+  // ---------- Settings-Sheet ----------
+  function openSettingsSheet(){
+    const overlay = document.createElement("div");
+    overlay.className = "overlay";
+    overlay.innerHTML = `
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <h2>Einstellungen</h2>
+        <p class="sheet-sub">Passe die App an deine Bedürfnisse an.</p>
+
+        <div class="settings-group">
+          <label>Design</label>
+          <div class="settings-row">
+            <div><div class="sr-label">Dunkelmodus</div><div class="sr-desc">Wechselt zwischen hell und dunkel</div></div>
+            <div class="toggle-wrap ${darkMode?'on':''}" id="settingsDarkToggle">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label>Allgemein</label>
+          <div class="settings-row">
+            <div><div class="sr-label">Tägliche Erinnerung</div><div class="sr-desc">Morgendliches Review automatisch anzeigen (7–9 Uhr)</div></div>
+            <div class="toggle-wrap on" id="settingsReviewToggle">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label>Daten</label>
+          <button class="danger-btn" id="settingsClearData">🗑 Alle Daten löschen</button>
+        </div>
+
+        <div class="sheet-actions" style="margin-top:16px;">
+          <button class="btn btn-secondary" id="closeSettings">Schließen</button>
+        </div>
+      </div>
+    `;
+    document.getElementById("app").appendChild(overlay);
+    requestAnimationFrame(()=> overlay.classList.add("show"));
+
+    function remove(){ overlay.classList.remove("show"); setTimeout(()=> overlay.remove(), 300); }
+    overlay.addEventListener("click", e=>{ if(e.target===overlay) remove(); });
+    overlay.querySelector("#closeSettings").addEventListener("click", remove);
+    overlay.querySelector("#settingsDarkToggle").addEventListener("click", function(){
+      toggleTheme(); this.classList.toggle("on");
+    });
+    overlay.querySelector("#settingsClearData").addEventListener("click", ()=>{ remove(); setTimeout(()=>clearAllData(),350); });
+  }
+
+  function toggleTheme(){
+    darkMode = !darkMode;
+    document.body.classList.toggle("dark", darkMode);
+    save();
+    if(currentList==="mehr"||currentList==="roadmap") render();
+    showToast(darkMode?"Dunkelmodus":"Helles Design");
+  }
+
+  function clearAllData(){
+    if(!confirm("Alle Aufgaben und Einstellungen unwiderruflich löschen?")) return;
+    tasks = []; meta = {lastReviewDate:null,lastLaterNudge:null,darkMode:false};
+    darkMode=false; document.body.classList.remove("dark");
+    save(); currentList="inbox"; render();
+    showToast("Alle Daten gelöscht");
+  }
+
+  // ---------- Render ----------
+  function render(){
+    autoPromoteDueTasks();
+
+    document.querySelectorAll(".nav-btn").forEach(b=>{
+      b.classList.toggle("active", b.dataset.list === currentList);
+    });
+
+    const laterCount = tasks.filter(t=>t.list==="later"&&!t.done).length;
+    if(laterCount>0){ laterBadge.style.display="flex"; laterBadge.textContent=laterCount; }
+    else { laterBadge.style.display="none"; }
+
+    if(currentList==="planner"){ renderPlannerView(); return; }
+    if(currentList==="mehr"){ renderMehrView(); return; }
+
+    const titles = { inbox:"Inbox", today:"Heute", later:"Anstehend" };
+    listTitle.textContent = titles[currentList];
+
+    const items = tasks.filter(t=>t.list===currentList).sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      if(a.due && b.due) return new Date(a.due)-new Date(b.due);
+      if(a.due) return -1; if(b.due) return 1;
+      return a.created - b.created;
+    });
+
+    if(currentList==="inbox"){
+      subline.textContent = items.length ? items.length+" ungeordnet — wischen, oder ganz nach links für ein Datum" : "Alles einsortiert.";
+    } else if(currentList==="today"){
+      const open = items.filter(t=>!t.done).length;
+      subline.textContent = open===0&&items.length ? "Alles erledigt für heute." : open+(open===1?" Aufgabe offen":" Aufgaben offen");
+    } else {
+      subline.textContent = items.length ? "Wird nicht automatisch vergessen — Fälligkeitsdatum setzen, um sie nach Heute zu holen." : "Nichts zurückgestellt.";
+    }
+
+    listContainer.innerHTML = "";
+
+    if(currentList==="later" && items.length){
+      const oldest = items.filter(t=>!t.done).reduce((a,b)=>!a||b.created<a.created?b:a,null);
+      if(oldest){
+        const days = Math.floor((Date.now()-oldest.created)/86400000);
+        if(days>=NUDGE_DAYS){
+          const nudge = document.createElement("div"); nudge.className="nudge";
+          nudge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span>„'+escapeHtml(oldest.text.slice(0,40))+(oldest.text.length>40?'…':'')+'“ liegt seit '+days+' Tagen hier. Kurz sichten und einsortieren?</span>';
+          listContainer.appendChild(nudge);
+        }
+      }
+    }
+
+    if(!items.length){
+      const empty = document.createElement("div"); empty.className="empty-state";
+      const glyphs = { inbox:"✓", today:"☀", later:"⏳" };
+      const texts = { inbox:"Keine neuen Gedanken. Tipp auf + um etwas festzuhalten.", today:"Für heute ist nichts geplant.", later:"Nichts wartet im Hintergrund." };
+      empty.innerHTML = '<div class="glyph">'+glyphs[currentList]+'</div><p>'+texts[currentList]+'</p>';
+      listContainer.appendChild(empty);
+      return;
+    }
+
+    items.forEach(t=>listContainer.appendChild(renderRow(t)));
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement("div"); d.textContent = s; return d.innerHTML;
+  }
+
+  // ---------- Edit ----------
+  let editTaskId = null;
+  const editOverlay = document.getElementById("editOverlay");
+  const editInput = document.getElementById("editInput");
+  const editDueInput = document.getElementById("editDueInput");
+
+  function openEdit(t){
+    editTaskId = t.id;
+    editInput.value = t.text;
+    editDueInput.value = t.due ? (()=>{
+      const d = new Date(t.due);
+      const pad=n=>String(n).padStart(2,"0");
+      return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+    })() : "";
+    editOverlay.classList.add("show");
+    setTimeout(()=>editInput.focus(),260);
+  }
+  function closeEdit(){ editOverlay.classList.remove("show"); editTaskId=null; }
+
+  document.getElementById("cancelEdit").addEventListener("click", closeEdit);
+  editOverlay.addEventListener("click", e=>{ if(e.target===editOverlay) closeEdit(); });
+  document.getElementById("confirmEdit").addEventListener("click", ()=>{
+    const text = editInput.value.trim();
+    if(!text) return;
+    const task = tasks.find(x=>x.id===editTaskId);
+    if(!task) return;
+    task.text = text;
+    task.due = editDueInput.value ? new Date(editDueInput.value).toISOString() : null;
+    save(); closeEdit(); render();
+    showToast("Aufgabe aktualisiert");
+  });
+
+  // ---------- Render Row ----------
+  function renderRow(t, opts){
+    opts = opts || {};
+    const wrap = document.createElement("div"); wrap.className = "task-row-wrap";
+
+    const swipeConfig = {
+      inbox: { left: "today", leftSuper: true, right: "later" },
+      later: { left: "today", right: null },
+      today: { left: "inbox", right: "later", rightSuper: true }
+    };
+    const cfg = swipeConfig[currentList] || {};
+    const swipable = !opts.simple && (cfg.left || cfg.right || cfg.leftSuper || cfg.rightSuper);
+
+    if(swipable){
+      if(cfg.left || cfg.leftSuper){
+        const bgLeft = document.createElement("div");
+        bgLeft.className = "swipe-bg" + (cfg.left==="inbox"?" inbox-bg":" left");
+        const normalLabel = cfg.left==="inbox" ? "📥 Inbox" : "☀ Heute";
+        bgLeft.innerHTML = '<span class="swipe-icon normal">'+normalLabel+'</span><span class="swipe-icon super">📅 Planen</span>';
+        wrap.appendChild(bgLeft);
+      }
+      if(cfg.right || cfg.rightSuper){
+        const bgRight = document.createElement("div");
+        const isPlanner = cfg.rightSuper && !cfg.right;
+        bgRight.className = "swipe-bg" + (isPlanner?" planner-bg":" right");
+        bgRight.innerHTML = '<span class="swipe-icon">'+(isPlanner?"📅 Planen":"⏳ Anstehend")+'</span>';
+        wrap.appendChild(bgRight);
+      }
+    }
+
+    const row = document.createElement("div");
+    row.className = "task-row" + (t.done?" done":"");
+    row.dataset.id = t.id;
+
+    const check = document.createElement("div"); check.className="check";
+    check.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>';
+    check.addEventListener("click", e=>{ e.stopPropagation(); t.done=!t.done; save(); render(); });
+
+    const main = document.createElement("div"); main.className="task-main";
+    const txt = document.createElement("div"); txt.className="task-text"; txt.textContent=t.text;
+    main.appendChild(txt);
+    if(t.due){
+      const meta = document.createElement("div"); meta.className="task-meta "+metaClass(t);
+      meta.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> '+fmtDue(t.due);
+      main.appendChild(meta);
+    }
+    // Click to edit
+    main.addEventListener("click", ()=>{ if(!opts.simple) openEdit(t); });
+
+    const actions = document.createElement("div"); actions.className="row-actions";
+
+    if(!opts.simple && !opts.noActions){
+      // Buttons für alle Ansichten: zeige alle relevanten Verschiebe-Optionen
+      if(currentList!=="today"){
+        const b=document.createElement("button"); b.className="to-today";
+        b.title="Nach Heute"; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>';
+        b.addEventListener("click",e=>{e.stopPropagation();t.list="today";save();render();showToast("Nach Heute");});
+        actions.appendChild(b);
+      }
+      if(currentList!=="later"){
+        const b=document.createElement("button"); b.className="to-later";
+        b.title="Nach Anstehend"; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>';
+        b.addEventListener("click",e=>{e.stopPropagation();t.list="later";save();render();showToast("Nach Anstehend");});
+        actions.appendChild(b);
+      }
+      if(currentList!=="inbox"){
+        const b=document.createElement("button"); b.className="to-inbox";
+        b.title="Zurück in Inbox"; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v10l-3 6H7l-3-6V4z"/><path d="M4 14h5l1.5 3h3L15 14h5"/></svg>';
+        b.addEventListener("click",e=>{e.stopPropagation();t.list="inbox";save();render();showToast("Zurück in Inbox");});
+        actions.appendChild(b);
+      }
+      // Planer-Button immer (außer in Simple-Ansicht)
+      const bp=document.createElement("button"); bp.className="to-planner";
+      bp.title="Termin planen"; bp.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>';
+      bp.addEventListener("click",e=>{e.stopPropagation();openSchedule(t);});
+      actions.appendChild(bp);
+      // Delete
+      const d=document.createElement("button"); d.title="Löschen";
+      d.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m2 0v13a2 2 0 01-2 2H9a2 2 0 01-2-2V7h10z"/></svg>';
+      d.addEventListener("click",e=>{e.stopPropagation();tasks=tasks.filter(x=>x.id!==t.id);save();render();});
+      actions.appendChild(d);
+    }
+
+    row.appendChild(check); row.appendChild(main); row.appendChild(actions);
+    wrap.appendChild(row);
+
+    if(swipable) attachSwipe(row, wrap, t, cfg);
+    return wrap;
+  }
+
+  // ---------- Swipe (gerade, kein rotate) ----------
+  function attachSwipe(row, wrap, t, cfg){
+    let startX = 0, currentX = 0, dragging = false;
+    const threshold = 90;
+    const superThreshold = 190;
+    const bgLeft = wrap.querySelector(".swipe-bg.left, .swipe-bg.inbox-bg");
+    const bgRight = wrap.querySelector(".swipe-bg.right, .swipe-bg.planner-bg");
+
+    function updateVisuals(dx){
+      row.style.transform = `translateX(${dx}px)`;
+      if(dx>0 && bgRight){
+        const p = Math.min(dx/threshold,1);
+        bgRight.style.opacity=p; bgRight.style.transform=`scale(${0.92+p*0.08})`;
+        bgRight.classList.toggle("armed",p>=1);
+      }
+      if(dx<0 && bgLeft){
+        const p = Math.min(Math.abs(dx)/threshold,1);
+        bgLeft.style.opacity=p; bgLeft.style.transform=`scale(${0.92+p*0.08})`;
+        bgLeft.classList.toggle("armed",p>=1);
+        if(cfg.leftSuper) bgLeft.classList.toggle("super-mode", dx<=-superThreshold);
+      }
+    }
+    function resetVisuals(){
+      row.style.transform="translateX(0)";
+      if(bgLeft){bgLeft.style.opacity=0;bgLeft.classList.remove("armed","super-mode");bgLeft.style.transform="";}
+      if(bgRight){bgRight.style.opacity=0;bgRight.classList.remove("armed");bgRight.style.transform="";}
+    }
+    function commit(dx){
+      // Over-Swipe prüfen zuerst (nehmen Vorrang)
+      if(dx<=-superThreshold && cfg.leftSuper){ resetVisuals(); openSchedule(t); return; }
+      if(dx>=superThreshold && cfg.rightSuper){ resetVisuals(); openSchedule(t); return; }
+      // Normale Swipe-Aktionen
+      if(dx>threshold && cfg.right){
+        t.list=cfg.right; save();
+        showToast(cfg.right==="inbox"?"Zurück in die Inbox":"Nach Anstehend verschoben"); render(); return;
+      }
+      if(dx<-threshold && cfg.left){
+        t.list=cfg.left; save();
+        showToast(cfg.left==="inbox"?"Zurück in die Inbox":"Nach Heute verschoben"); render(); return;
+      }
+      resetVisuals();
+    }
+
+    row.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;dragging=true;row.classList.add("dragging");},{passive:true});
+    row.addEventListener("touchmove",e=>{
+      if(!dragging) return;
+      currentX=e.touches[0].clientX-startX;
+      if((currentX>0&&!cfg.right&&!cfg.rightSuper)||(currentX<0&&!cfg.left&&!cfg.leftSuper)) currentX*=0.25;
+      updateVisuals(currentX);
+    },{passive:true});
+    row.addEventListener("touchend",()=>{dragging=false;row.classList.remove("dragging");commit(currentX);currentX=0;});
+
+    let md=false;
+    row.addEventListener("mousedown",e=>{md=true;startX=e.clientX;row.classList.add("dragging");});
+    window.addEventListener("mousemove",e=>{if(!md)return;currentX=e.clientX-startX;if((currentX>0&&!cfg.right&&!cfg.rightSuper)||(currentX<0&&!cfg.left&&!cfg.leftSuper))currentX*=0.25;updateVisuals(currentX);});
+    window.addEventListener("mouseup",()=>{if(!md)return;md=false;row.classList.remove("dragging");commit(currentX);currentX=0;});
+  }
+
+  // ---------- Toast ----------
+  let toastTimer;
+  function showToast(msg){
+    const el=document.getElementById("toast");
+    el.textContent=msg; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove("show"),1800);
+  }
+
+  // ---------- Nav ----------
+  document.querySelectorAll(".nav-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{currentList=btn.dataset.list;render();});
+  });
+
+  // ---------- Add sheet ----------
+  const addOverlay=document.getElementById("addOverlay");
+  const taskInput=document.getElementById("taskInput");
+  const dueInput=document.getElementById("dueInput");
+
+  function openAdd(){addOverlay.classList.add("show");taskInput.value="";dueInput.value="";setTimeout(()=>taskInput.focus(),260);}
+  function closeAdd(){addOverlay.classList.remove("show");}
+  document.getElementById("fabAdd").addEventListener("click",openAdd);
+  document.getElementById("cancelAdd").addEventListener("click",closeAdd);
+  addOverlay.addEventListener("click",e=>{if(e.target===addOverlay)closeAdd();});
+
+  document.getElementById("confirmAdd").addEventListener("click",()=>{
+    const text=taskInput.value.trim();
+    if(!text) return;
+    const due=dueInput.value?new Date(dueInput.value).toISOString():null;
+    // Mit Fälligkeitsdatum → direkt nach "later", sonst in Inbox
+    tasks.push({id:uid(),text,list:due?"later":"inbox",due,done:false,created:Date.now()});
+    save(); closeAdd();
+    currentList=due?"later":"inbox"; render();
+    showToast(due?"Zu Anstehend hinzugefügt":"Zur Inbox hinzugefügt");
+  });
+
+  // ---------- Schedule sheet ----------
+  const scheduleOverlay=document.getElementById("scheduleOverlay");
+  const scheduleTaskText=document.getElementById("scheduleTaskText");
+  const scheduleDueInput=document.getElementById("scheduleDueInput");
+  let scheduleTaskId=null;
+
+  function openSchedule(t){
+    scheduleTaskId=t.id; scheduleTaskText.textContent=t.text;
+    scheduleDueInput.value=t.due?(()=>{const d=new Date(t.due);const pad=n=>String(n).padStart(2,"0");return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());})():"";
+    scheduleOverlay.classList.add("show"); setTimeout(()=>scheduleDueInput.focus(),260);
+  }
+  function closeSchedule(){scheduleOverlay.classList.remove("show");scheduleTaskId=null;}
+  document.getElementById("cancelSchedule").addEventListener("click",closeSchedule);
+  scheduleOverlay.addEventListener("click",e=>{if(e.target===scheduleOverlay)closeSchedule();});
+  document.getElementById("confirmSchedule").addEventListener("click",()=>{
+    const task=tasks.find(x=>x.id===scheduleTaskId); if(!task) return;
+    task.due=scheduleDueInput.value?new Date(scheduleDueInput.value).toISOString():null;
+    save(); closeSchedule(); render();
+    showToast("Termin geplant");
+  });
+
+  // ---------- Review sheet ----------
+  const reviewOverlay=document.getElementById("reviewOverlay");
+  const reviewTitle=document.getElementById("reviewTitle");
+  const reviewSub=document.getElementById("reviewSub");
+  const reviewList=document.getElementById("reviewList");
+  const statDone=document.getElementById("statDone");
+  const statOpen=document.getElementById("statOpen");
+  const progressFill=document.getElementById("progressFill");
+  const roadmapBlock=document.getElementById("roadmapBlock");
+  const roadmapList=document.getElementById("roadmapList");
+
+  function openReview(auto){
+    autoPromoteDueTasks();
+    const todays=tasks.filter(t=>t.list==="today");
+    const done=todays.filter(t=>t.done).length;
+    const open=todays.length-done;
+    const hour=new Date().getHours();
+    const allDone=todays.length>0&&open===0;
+
+    if(auto&&hour<12){reviewTitle.textContent="Guten Morgen";reviewSub.textContent="Das steht heute für dich an.";}
+    else if(hour<18){reviewTitle.textContent="Zwischenstand";reviewSub.textContent="So sieht dein Tag bisher aus.";}
+    else{reviewTitle.textContent="Tagesabschluss";reviewSub.textContent="Ein Blick zurück auf heute.";}
+
+    statDone.textContent=done; statOpen.textContent=open;
+    progressFill.style.width=(todays.length?Math.round((done/todays.length)*100):0)+"%";
+
+    reviewList.innerHTML="";
+    if(allDone){
+      const c=document.createElement("div");c.className="review-celebrate";
+      c.innerHTML='<div class="glyph">✓</div><p>Alles erledigt. Gut gemacht.</p>'; reviewList.appendChild(c);
+    } else if(!todays.length){
+      const p=document.createElement("p");p.style.cssText="color:var(--ink-soft);font-size:14px;text-align:center;padding:10px 0;";
+      p.textContent="Noch nichts für heute geplant."; reviewList.appendChild(p);
+    } else {
+      todays.filter(t=>!t.done).slice(0,6).forEach(t=>reviewList.appendChild(renderRow(t,{simple:true,noActions:true})));
+    }
+
+    const upcoming=tasks.filter(t=>t.list==="later"&&!t.done&&t.due).filter(t=>(new Date(t.due)-Date.now())<7*86400000).sort((a,b)=>new Date(a.due)-new Date(b.due)).slice(0,4);
+    if(upcoming.length){
+      roadmapBlock.style.display="block"; roadmapList.innerHTML="";
+      upcoming.forEach(t=>{
+        const item=document.createElement("div");item.className="roadmap-item";
+        item.innerHTML='<span class="dot"></span><span class="rm-text">'+escapeHtml(t.text.slice(0,36))+(t.text.length>36?'…':'')+'</span><span class="rm-when">'+fmtDue(t.due)+'</span>';
+        roadmapList.appendChild(item);
+      });
+    }else{roadmapBlock.style.display="none";}
+
+    reviewOverlay.classList.add("show");
+    meta.lastReviewDate=todayStr(); save();
+  }
+  function closeReview(){reviewOverlay.classList.remove("show");}
+  document.getElementById("reviewBtn").addEventListener("click",()=>openReview(false));
+  document.getElementById("closeReview").addEventListener("click",closeReview);
+  reviewOverlay.addEventListener("click",e=>{if(e.target===reviewOverlay)closeReview();});
+
+  // ---------- Morning popup ----------
+  function maybeShowMorningReview(){
+    const now=new Date();
+    if(now.getHours()>=7&&now.getHours()<9&&meta.lastReviewDate!==todayStr())
+      setTimeout(()=>openReview(true),400);
+  }
+
+  // ---------- Init ----------
+  render();
+  maybeShowMorningReview();
+  setInterval(()=>{autoPromoteDueTasks();render();},60000);
+
+})();
+</script>
+</body>
+</html>
