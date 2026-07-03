@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>its_done</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✓</text></svg>">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6E8B74">
 <style>
   :root{
     --bg: #FAF8F4;
@@ -52,6 +54,84 @@
   .dark .sheet{
     background:rgba(28,28,26,0.85);
   }
+
+  /* ═══ SOLARIZED LIGHT ═══ */
+  .solarized.solarized-light{
+    --bg: #fdf6e3;
+    --bg-elevated: #eee8d5;
+    --ink: #073642;
+    --ink-soft: #586e75;
+    --ink-faint: #93a1a1;
+    --line: #d3cbab;
+    --sage: #859900;
+    --sage-soft: #e8e4c9;
+    --amber: #b58900;
+    --amber-soft: #f5e6b8;
+    --danger: #dc322f;
+    --blue: #268bd2;
+    --blue-soft: #d5e8f7;
+    --orange: #cb4b16;
+    --orange-soft: #f5ddd0;
+    --plan: #6c71c4;
+    --plan-soft: #ddd8f0;
+  }
+  .solarized.solarized-light .overlay{
+    background:rgba(0,43,54,0.25);
+  }
+  .solarized.solarized-light .sheet{
+    background:rgba(253,246,227,0.92);
+  }
+  .solarized.solarized-light nav{
+    background: rgba(253,246,227,0.3);
+    border-color: rgba(211,203,171,0.5);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .solarized.solarized-light .quickadd-bar{
+    background: rgba(253,246,227,0.35);
+    border-color: rgba(211,203,171,0.5);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .solarized.solarized-light .quickadd-bar input{ color: var(--ink); }
+  .solarized.solarized-light .quickadd-bar input::placeholder{ color: var(--ink-faint); }
+
+  /* ═══ SOLARIZED DARK ═══ */
+  .solarized.solarized-dark{
+    --bg: #002b36;
+    --bg-elevated: #073642;
+    --ink: #fdf6e3;
+    --ink-soft: #93a1a1;
+    --ink-faint: #586e75;
+    --line: #1a4a56;
+    --sage: #859900;
+    --sage-soft: #0d3b1e;
+    --amber: #b58900;
+    --amber-soft: #2e2414;
+    --danger: #dc322f;
+    --blue: #268bd2;
+    --blue-soft: #0e2a40;
+    --orange: #cb4b16;
+    --orange-soft: #2e1a10;
+    --plan: #6c71c4;
+    --plan-soft: #1a1a30;
+  }
+  .solarized.solarized-dark .overlay{
+    background:rgba(0,0,0,0.5);
+  }
+  .solarized.solarized-dark .sheet{
+    background:rgba(0,43,54,0.9);
+  }
+  .solarized.solarized-dark nav{
+    background: rgba(0,43,54,0.4);
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .solarized.solarized-dark .quickadd-bar{
+    background: rgba(0,43,54,0.45);
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .solarized.solarized-dark .quickadd-bar input{ color: var(--ink); }
+  .solarized.solarized-dark .quickadd-bar input::placeholder{ color: var(--ink-faint); }
   @viewport{ interactive-widget: overlays-content; }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{height:100%;}
@@ -229,20 +309,21 @@
   nav{
     position:relative; flex-shrink:0;
     padding: 8px 6px;
-    background: rgba(250,248,244,0.78);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(233,229,219,0.5);
+    background: rgba(250,248,244,0.28);
+    backdrop-filter: blur(40px) saturate(220%);
+    -webkit-backdrop-filter: blur(40px) saturate(220%);
+    border: 1px solid rgba(255,255,255,0.4);
     border-radius: var(--dock-radius);
     display:flex;
     justify-content:space-around;
     align-items:center;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.7);
     z-index:10;
   }
   .dark nav{
-    background: rgba(28,28,26,0.8);
-    border-color: rgba(43,43,40,0.6);
+    background: rgba(28,28,26,0.35);
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
   }
   .nav-btn{
     display:flex; flex-direction:column; align-items:center; gap:3px;
@@ -293,13 +374,13 @@
   .quickadd-bar{
     position:relative; z-index:2;
     display:flex; align-items:center; gap:10px;
-    background: rgba(250,248,244,0.9);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(233,229,219,0.6);
+    background: rgba(250,248,244,0.32);
+    backdrop-filter: blur(40px) saturate(220%);
+    -webkit-backdrop-filter: blur(40px) saturate(220%);
+    border: 1px solid rgba(255,255,255,0.45);
     border-radius: 20px;
     padding: 18px 10px 12px 18px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.7);
     touch-action: pan-y;
     transition: transform .28s cubic-bezier(.22,1,.36,1);
   }
@@ -310,8 +391,9 @@
     pointer-events:none;
   }
   .dark .quickadd-bar{
-    background: rgba(28,28,26,0.88);
-    border-color: rgba(43,43,40,0.7);
+    background: rgba(28,28,26,0.38);
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
   }
   .quickadd-bar.dragging{ transition:none; }
   .quickadd-bar input{
@@ -542,6 +624,17 @@
     color:var(--ink-soft); cursor:pointer;
   }
   .planner-nav-btn svg{ width:15px; height:15px; }
+  .planner-tabs{
+    display:flex; gap:2px; background:var(--bg); border-radius:10px; padding:2px;
+    margin-bottom:14px;
+  }
+  .planner-tab{
+    flex:1; padding:7px 0; border:none; border-radius:8px;
+    font-size:12.5px; font-weight:600; cursor:pointer;
+    background:transparent; color:var(--ink-faint);
+    transition: background .15s, color .15s;
+  }
+  .planner-tab.active{ background:var(--bg-elevated); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.06); }
   .planner-grid{
     display:grid; grid-template-columns:repeat(7,1fr);
     gap:5px; margin-bottom:22px;
@@ -571,6 +664,41 @@
     font-size:12.5px; font-weight:700; color:var(--ink-faint);
     margin:0 4px 12px; text-transform:uppercase; letter-spacing:.04em;
   }
+
+  /* Wochenansicht */
+  .planner-week{
+    display:grid; grid-template-columns:repeat(7,1fr);
+    gap:6px; margin-bottom:18px;
+  }
+  .pw-col{
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .pw-header{
+    text-align:center; padding:8px 0; border-radius:10px;
+    font-size:11px; font-weight:700; color:var(--ink-faint);
+    background:var(--bg);
+  }
+  .pw-header.pw-today{ color:var(--sage); background:var(--sage-soft); }
+  .pw-header.pw-selected{ color:#fff; background:var(--ink); }
+  .pw-day-num{
+    display:block; font-size:18px; font-weight:700; color:var(--ink);
+    margin-top:2px;
+  }
+  .pw-header.pw-today .pw-day-num{ color:var(--sage); }
+  .pw-header.pw-selected .pw-day-num{ color:#fff; }
+  .pw-tasks{
+    display:flex; flex-direction:column; gap:3px;
+    min-height:40px;
+  }
+  .pw-task{
+    font-size:11px; line-height:1.35; padding:5px 7px;
+    background:var(--bg-elevated); border-radius:8px;
+    border-left:2.5px solid var(--sage);
+    color:var(--ink); word-break:break-word;
+    cursor:pointer;
+  }
+  .pw-task.pw-overdue{ border-left-color:var(--danger); }
+  .pw-task.pw-done{ color:var(--ink-faint); text-decoration:line-through; border-left-color:var(--line); }
 
   .mehr-menu{
     display:flex; flex-direction:column; gap:12px;
@@ -694,6 +822,249 @@
   .rm-task .rmt-due{ font-size:11px; color:var(--ink-faint); flex-shrink:0; }
 
   ::-webkit-scrollbar{ display:none; }
+
+  /* ═══ DESKTOP: Sidebar links ═══ */
+  @media(min-width:768px){
+    #app{
+      max-width:none;
+      display:grid;
+      grid-template-columns:220px 1fr;
+      grid-template-rows:auto auto 1fr;
+    }
+    header{
+      grid-column:2; grid-row:1;
+      padding:20px 32px 12px;
+    }
+    header h1{ font-size:32px; }
+    .subline{
+      grid-column:2; grid-row:2;
+      padding:0 32px 14px;
+    }
+    main{
+      grid-column:2; grid-row:3;
+      padding:4px 32px 32px;
+    }
+    .bottom-dock{
+      grid-column:1; grid-row:1/-1;
+      position:relative;
+      left:auto; right:auto; bottom:auto;
+      padding:20px 12px 20px;
+      display:flex; flex-direction:column; gap:8px;
+      background: rgba(250,248,244,0.28);
+      backdrop-filter: blur(40px) saturate(220%);
+      -webkit-backdrop-filter: blur(40px) saturate(220%);
+      border-right: 1px solid rgba(255,255,255,0.4);
+      border-radius:0;
+      box-shadow: inset -1px 0 0 rgba(255,255,255,0.7), 4px 0 30px rgba(0,0,0,0.04);
+      z-index:5;
+    }
+    .dark .bottom-dock{
+      background: rgba(28,28,26,0.35);
+      border-right-color: rgba(255,255,255,0.06);
+      box-shadow: inset -1px 0 0 rgba(255,255,255,0.05), 4px 0 30px rgba(0,0,0,0.2);
+    }
+    .quickadd-wrap{ order:10; margin-top:auto; }
+    nav{
+      position:relative;
+      flex-direction:column;
+      gap:2px;
+      padding:8px;
+      background:transparent;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+      border:none;
+      border-radius:0;
+      box-shadow:none;
+      align-items:stretch;
+      order:1;
+    }
+    .nav-btn{
+      flex-direction:row;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:14px;
+      justify-content:flex-start;
+    }
+    .nav-btn svg{ width:20px; height:20px; }
+    .nav-btn:hover{ background:rgba(0,0,0,0.04); color:var(--ink); }
+    .dark .nav-btn:hover{ background:rgba(255,255,255,0.06); }
+    .nav-btn.active{ background:var(--sage-soft); color:var(--ink); }
+    .dark .nav-btn.active{ background:var(--sage-soft); }
+    .nav-badge{
+      position:static;
+      margin-left:auto;
+    }
+    .quickadd-bar{
+      background: rgba(250,248,244,0.32);
+      backdrop-filter: blur(40px) saturate(220%);
+      -webkit-backdrop-filter: blur(40px) saturate(220%);
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius:14px;
+      padding:10px 10px 10px 16px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .dark .quickadd-bar{
+      background: rgba(28,28,26,0.38);
+      border-color: rgba(255,255,255,0.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .solarized.solarized-light .bottom-dock{
+      background: rgba(253,246,227,0.3);
+      border-right-color: rgba(211,203,171,0.5);
+      box-shadow: inset -1px 0 0 rgba(255,255,255,0.7), 4px 0 30px rgba(0,0,0,0.04);
+    }
+    .solarized.solarized-light .quickadd-bar{
+      background: rgba(253,246,227,0.35);
+      border-color: rgba(211,203,171,0.5);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .solarized.solarized-dark .bottom-dock{
+      background: rgba(0,43,54,0.4);
+      border-right-color: rgba(255,255,255,0.06);
+      box-shadow: inset -1px 0 0 rgba(255,255,255,0.04), 4px 0 30px rgba(0,0,0,0.2);
+    }
+    .solarized.solarized-dark .quickadd-bar{
+      background: rgba(0,43,54,0.45);
+      border-color: rgba(255,255,255,0.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .quickadd-handle{ display:none; }
+    .quickadd-bg{ display:none; }
+
+    /* Overlays: Desktop-Modal */
+    .overlay{
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,0.25);
+      backdrop-filter:blur(8px) saturate(120%);
+      -webkit-backdrop-filter:blur(8px) saturate(120%);
+    }
+    .sheet{
+      max-width:460px;
+      width:calc(100% - 40px);
+      max-height:min(80vh, 640px);
+      border-radius:20px;
+      margin:0 auto;
+      transform:translateY(0) scale(.96);
+      opacity:0;
+      transition:transform .22s cubic-bezier(.22,1,.36,1), opacity .2s ease;
+      box-shadow:0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+      overflow-y:auto;
+    }
+    .overlay.show .sheet{ transform:translateY(0) scale(1); opacity:1; }
+    .sheet-handle{ display:none; }
+    .sheet h2{ font-size:22px; letter-spacing:-0.015em; }
+    .sheet .sheet-sub{ font-size:14.5px; margin-bottom:20px; }
+    textarea.task-input{ min-height:64px; }
+
+    /* Review-Dialog: breiter */
+    #reviewOverlay .sheet{ max-width:520px; max-height:min(85vh, 720px); }
+    #reviewOverlay .sheet .review-stats{ gap:14px; }
+    #reviewOverlay .sheet .stat-card{ padding:18px 16px; }
+    #reviewOverlay .sheet .stat-num{ font-size:30px; }
+
+    /* Task rows: mehr Platz */
+    .task-row{ padding:16px 20px; }
+    .task-text{ font-size:16px; }
+    .row-actions button{ width:32px; height:32px; }
+  }
+  @media(min-width:1024px){
+    #app{ grid-template-columns:260px 1fr; }
+    header h1{ font-size:36px; }
+    main{ padding:4px 48px 48px; }
+    header{ padding:24px 48px 16px; }
+    .subline{ padding:0 48px 16px; }
+    .overlay{ background:rgba(0,0,0,0.18); }
+    .sheet{
+      max-width:480px;
+      max-height:min(82vh, 680px);
+      border-radius:24px;
+      box-shadow:0 24px 80px rgba(0,0,0,0.14), 0 8px 24px rgba(0,0,0,0.06);
+    }
+    #reviewOverlay .sheet{ max-width:560px; max-height:min(88vh, 780px); }
+  }
+
+  /* ═══ DESKTOP: Planner-Desktop ═══ */
+  @media(min-width:768px){
+    .planner-header .month-label{ font-size:22px; }
+    .planner-nav-btn{ width:40px; height:40px; }
+    .planner-nav-btn svg{ width:18px; height:18px; }
+    .planner-tabs{ max-width:200px; margin-bottom:16px; }
+    .planner-grid{ gap:6px; }
+    .planner-day{
+      aspect-ratio:auto;
+      min-height:44px; max-height:56px;
+      font-size:13px;
+      border-radius:10px;
+    }
+    .planner-day .dot-row{ margin-top:3px; height:5px; }
+    .planner-day .pdot{ width:4px; height:4px; }
+
+    .planner-week{ gap:10px; }
+    .pw-header{
+      font-size:12px; padding:10px 0;
+      border-radius:12px;
+    }
+    .pw-day-num{ font-size:20px; }
+    .pw-task{ font-size:12px; padding:6px 8px; }
+
+    .mehr-menu{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .mehr-card:active{ transform:none; }
+    .mehr-card:hover{ box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+
+    .settings-group{ background:var(--bg-elevated); border-radius:var(--radius); padding:16px; border:1px solid var(--line); }
+    .danger-btn{ width:auto; padding:10px 20px; }
+
+    .toast{ bottom:auto; top:40px; }
+
+    .rm-task{ padding:12px 16px; }
+    .rm-task .rmt-text{ font-size:15px; }
+  }
+  @media(min-width:1024px){
+    .planner-grid{ gap:8px; }
+    .planner-day{ font-size:14px; border-radius:12px; }
+    .planner-day .pdot{ width:5px; height:5px; }
+    .planner-week{ gap:14px; }
+    .pw-header{ font-size:13px; border-radius:14px; padding:12px 0; }
+    .pw-day-num{ font-size:22px; }
+    .pw-task{ font-size:12.5px; padding:7px 9px; }
+  }
+
+  /* ═══ THEME PICKER ═══ */
+  .theme-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .theme-option{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    padding:14px 10px;
+    border-radius:var(--radius-sm);
+    border:1.5px solid var(--line);
+    background:var(--bg);
+    cursor:pointer;
+    transition:all .15s ease;
+    font-family:inherit;
+  }
+  .theme-option:active{ transform:scale(.96); }
+  .theme-option .theme-icon{ font-size:22px; }
+  .theme-option .theme-label{ font-size:12.5px; font-weight:600; color:var(--ink-soft); }
+  .theme-option.active{
+    border-color:var(--sage);
+    background:var(--sage-soft);
+  }
+  .theme-option.active .theme-label{ color:var(--ink); }
+  .theme-option:hover:not(.active){ border-color:var(--ink-faint); }
+
+  @media(min-width:768px){
+    .theme-grid{ grid-template-columns:repeat(3,1fr); gap:10px; }
+    .theme-option{ padding:16px 12px; }
+  }
 </style>
 </head>
 <body>
@@ -929,26 +1300,75 @@
   let tasks = load(STORAGE_KEY, []);
   tasks.forEach(t=>{ if(t.notes===undefined) t.notes=null; if(!Array.isArray(t.tags)) t.tags=[]; });
   let tagsList = load(TAGS_KEY, []);
-  let meta = load(META_KEY, { lastReviewDate: null, lastLaterNudge: null, darkMode: false });
+  let meta = load(META_KEY, { lastReviewDate: null, lastLaterNudge: null, theme: 'normal-light' });
   let currentList = "inbox";
   let subView = null; // null | "tags" | "tagdetail"
   let tagDetailId = null;
-  let darkMode = meta.darkMode || false;
 
-  if(darkMode) document.body.classList.add("dark");
+  const THEMES = {
+    'normal-light':  { label: 'Normal Hell', icon: '☀️', dark: false, solarized: false },
+    'normal-dark':   { label: 'Normal Dunkel', icon: '🌙', dark: true, solarized: false },
+    'normal-auto':   { label: 'Normal Auto', icon: '🌓', dark: null, solarized: false },
+    'solarized-light': { label: 'Solarized Hell', icon: '☀️', dark: false, solarized: true },
+    'solarized-dark':  { label: 'Solarized Dunkel', icon: '🌙', dark: true, solarized: true },
+    'solarized-auto':  { label: 'Solarized Auto', icon: '🌓', dark: null, solarized: true },
+  };
+
+  let currentTheme = meta.theme || (meta.darkMode ? 'normal-dark' : 'normal-light');
+  if (!THEMES[currentTheme]) currentTheme = 'normal-light';
+  let darkMode = false; // derived from theme
+
+  function applyTheme(themeKey) {
+    currentTheme = themeKey;
+    const t = THEMES[themeKey];
+    if (!t) return;
+
+    let isDark = t.dark;
+    if (isDark === null) {
+      // Auto: follow system preference
+      isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    darkMode = isDark;
+
+    document.body.classList.toggle('dark', darkMode);
+    document.body.classList.toggle('solarized', t.solarized);
+    document.body.classList.toggle('solarized-light', t.solarized && !darkMode);
+    document.body.classList.toggle('solarized-dark', t.solarized && darkMode);
+
+    meta.theme = themeKey;
+    save();
+  }
+
+  applyTheme(currentTheme);
+
+  // Listen for system theme changes (for auto modes)
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (currentTheme === 'normal-auto' || currentTheme === 'solarized-auto') {
+        applyTheme(currentTheme);
+        if (currentList === 'mehr') render();
+      }
+    });
+  }
 
   function load(key, fallback){
     try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
     catch(e){ return fallback; }
   }
   function save(){
-    meta.darkMode = darkMode;
+    meta.theme = currentTheme;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     localStorage.setItem(META_KEY, JSON.stringify(meta));
     localStorage.setItem(TAGS_KEY, JSON.stringify(tagsList));
   }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-  function todayStr(d){ d=d||new Date(); return d.toISOString().slice(0,10); }
+  function todayStr(d){
+    d=d||new Date();
+    return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+  }
+  function toLocalISO(d){
+    return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"T"+pad2(d.getHours())+":"+pad2(d.getMinutes())+":00";
+  }
 
   // ---------- Tags ----------
   function findTag(id){ return tagsList.find(x=>x.id===id); }
@@ -974,7 +1394,7 @@
     const t = timeStr && timeStr.length ? timeStr : "09:00";
     const d = new Date(dateStr+"T"+t+":00");
     if(isNaN(d.getTime())) return null;
-    return d.toISOString();
+    return toLocalISO(d);
   }
   function dateStrOffset(days){
     const d = new Date(); d.setDate(d.getDate()+days);
@@ -1054,16 +1474,26 @@
   // ---------- Planer ----------
   let plannerDate = new Date();
   let plannerSelected = todayStr();
+  let plannerMode = "month"; // "month" | "week"
   const MONTH_NAMES = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+  function getWeekStart(d){
+    const c = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const day = c.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    c.setDate(c.getDate() + diff);
+    return c;
+  }
 
   function renderPlannerView(){
     listTitle.textContent = "Planer";
-    subline.textContent = "Tippe auf einen Tag, um geplante Aufgaben zu sehen.";
+    subline.textContent = plannerMode==="month" ? "Tippe auf einen Tag, um geplante Aufgaben zu sehen." : "Woche — Tippe auf einen Tag.";
     listContainer.innerHTML = "";
 
     const year = plannerDate.getFullYear();
     const month = plannerDate.getMonth();
 
+    // Header mit Pfeilen + Toggle
     const header = document.createElement("div");
     header.className = "planner-header";
     header.innerHTML = `
@@ -1072,6 +1502,43 @@
       <button class="planner-nav-btn" id="nextMonth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
     `;
     listContainer.appendChild(header);
+
+    // Tabs
+    const tabs = document.createElement("div");
+    tabs.className = "planner-tabs";
+    tabs.innerHTML = '<button class="planner-tab'+(plannerMode==="month"?" active":"")+'" data-mode="month">Monat</button><button class="planner-tab'+(plannerMode==="week"?" active":"")+'" data-mode="week">Woche</button>';
+    listContainer.appendChild(tabs);
+    tabs.querySelectorAll(".planner-tab").forEach(btn=>{
+      btn.addEventListener("click", ()=>{ plannerMode=btn.dataset.mode; render(); });
+    });
+
+    if(plannerMode==="week"){
+      renderPlannerWeek();
+    } else {
+      renderPlannerMonth();
+    }
+
+    document.getElementById("prevMonth").addEventListener("click", ()=>{
+      if(plannerMode==="week"){
+        plannerDate = new Date(plannerDate.getFullYear(), plannerDate.getMonth(), plannerDate.getDate()-7);
+      } else {
+        plannerDate = new Date(year,month-1,1);
+      }
+      render();
+    });
+    document.getElementById("nextMonth").addEventListener("click", ()=>{
+      if(plannerMode==="week"){
+        plannerDate = new Date(plannerDate.getFullYear(), plannerDate.getMonth(), plannerDate.getDate()+7);
+      } else {
+        plannerDate = new Date(year,month+1,1);
+      }
+      render();
+    });
+  }
+
+  function renderPlannerMonth(){
+    const year = plannerDate.getFullYear();
+    const month = plannerDate.getMonth();
 
     const grid = document.createElement("div");
     grid.className = "planner-grid";
@@ -1106,9 +1573,70 @@
     }
     listContainer.appendChild(grid);
 
-    document.getElementById("prevMonth").addEventListener("click", ()=>{ plannerDate=new Date(year,month-1,1); render(); });
-    document.getElementById("nextMonth").addEventListener("click", ()=>{ plannerDate=new Date(year,month+1,1); render(); });
+    // Selected day tasks
+    showDayTasks();
+  }
 
+  function renderPlannerWeek(){
+    const ws = getWeekStart(plannerDate);
+    const today = todayStr();
+
+    const dueMap = {};
+    tasks.forEach(t=>{ if(t.due){ const k=t.due.slice(0,10); if(!dueMap[k]) dueMap[k]=[]; dueMap[k].push(t); } });
+
+    const weekdays = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+    const week = document.createElement("div");
+    week.className = "planner-week";
+
+    for(let i=0; i<7; i++){
+      const d = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + i);
+      const key = todayStr(d);
+      const col = document.createElement("div");
+      col.className = "pw-col";
+
+      let hdrClass = "pw-header";
+      if(key===today) hdrClass += " pw-today";
+      if(key===plannerSelected) hdrClass += " pw-selected";
+      col.innerHTML = '<div class="'+hdrClass+'">'+weekdays[i]+'<span class="pw-day-num">'+d.getDate()+'</span></div>';
+
+      const taskWrap = document.createElement("div");
+      taskWrap.className = "pw-tasks";
+      const dayTasks = (dueMap[key]||[]).sort((a,b)=>new Date(a.due)-new Date(b.due));
+      dayTasks.forEach(t=>{
+        const el = document.createElement("div");
+        let cls = "pw-task";
+        if(t.done) cls += " pw-done";
+        else if(new Date(t.due) < new Date()) cls += " pw-overdue";
+        el.className = cls;
+        el.textContent = t.text.length > 60 ? t.text.slice(0,58)+"…" : t.text;
+        el.addEventListener("click", ()=>{ plannerSelected=key; openEdit(t); });
+        taskWrap.appendChild(el);
+      });
+      if(!dayTasks.length){
+        const empty = document.createElement("div");
+        empty.className = "pw-task";
+        empty.style.color = "var(--ink-faint)";
+        empty.style.borderLeftColor = "var(--line)";
+        empty.textContent = "—";
+        taskWrap.appendChild(empty);
+      }
+      col.appendChild(taskWrap);
+
+      col.addEventListener("click", (e)=>{
+        if(e.target.classList.contains("pw-task")) return;
+        plannerSelected=key;
+        plannerDate=new Date(d);
+        plannerMode="month";
+        render();
+      });
+      week.appendChild(col);
+    }
+    listContainer.appendChild(week);
+
+    showDayTasks();
+  }
+
+  function showDayTasks(){
     const dayTasks = tasks.filter(t=>t.due && t.due.slice(0,10)===plannerSelected);
     const title = document.createElement("div"); title.className="planner-daylist-title";
     const selD = new Date(plannerSelected+"T00:00:00");
@@ -1150,8 +1678,8 @@
         <span class="mc-arrow">›</span>
       </div>
       <div class="mehr-card" id="mehrTheme">
-        <div class="mc-icon theme">${darkMode?'🌙':'☀️'}</div>
-        <div class="mc-text"><strong>Erscheinungsbild</strong><span>${darkMode?'Dunkles':'Helles'} Design</span></div>
+        <div class="mc-icon theme">${THEMES[currentTheme]?.icon || '🎨'}</div>
+        <div class="mc-text"><strong>Erscheinungsbild</strong><span>${THEMES[currentTheme]?.label || 'Design'}</span></div>
         <span class="mc-arrow">›</span>
       </div>
       <div class="mehr-card" id="mehrSettings">
@@ -1170,7 +1698,7 @@
     document.getElementById("mehrReview").addEventListener("click", ()=>openReview(false));
     document.getElementById("mehrRoadmap").addEventListener("click", renderRoadmapView);
     document.getElementById("mehrTags").addEventListener("click", ()=>{ subView="tags"; render(); });
-    document.getElementById("mehrTheme").addEventListener("click", toggleTheme);
+    document.getElementById("mehrTheme").addEventListener("click", openThemePicker);
     document.getElementById("mehrSettings").addEventListener("click", openSettingsSheet);
     document.getElementById("mehrAbout").addEventListener("click", ()=>showToast("its_done 2.0 — Einfach erledigt."));
   }
@@ -1195,8 +1723,11 @@
 
     // Gruppiere nach Kalenderwochen
     function getWeekStart(d){
-      const c = new Date(d); const day = c.getDay(); const diff = c.getDate() - day + (day===0?-6:1);
-      c.setDate(diff); c.setHours(0,0,0,0); return c;
+      const c = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const day = c.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      c.setDate(c.getDate() + diff);
+      return c;
     }
     function fmtWeekStart(d){
       return d.toLocaleDateString("de-DE",{day:"2-digit",month:"short"});
@@ -1328,11 +1859,9 @@
 
         <div class="settings-group">
           <label>Design</label>
-          <div class="settings-row">
-            <div><div class="sr-label">Dunkelmodus</div><div class="sr-desc">Wechselt zwischen hell und dunkel</div></div>
-            <div class="toggle-wrap ${darkMode?'on':''}" id="settingsDarkToggle">
-              <div class="toggle-knob"></div>
-            </div>
+          <div class="settings-row" id="settingsThemeRow" style="cursor:pointer;">
+            <div><div class="sr-label">Erscheinungsbild</div><div class="sr-desc">${THEMES[currentTheme]?.label || 'Design'}</div></div>
+            <span style="font-size:18px;">${THEMES[currentTheme]?.icon || '🎨'}</span>
           </div>
         </div>
 
@@ -1362,24 +1891,67 @@
     function remove(){ overlay.classList.remove("show"); setTimeout(()=> overlay.remove(), 300); }
     overlay.addEventListener("click", e=>{ if(e.target===overlay) remove(); });
     overlay.querySelector("#closeSettings").addEventListener("click", remove);
-    overlay.querySelector("#settingsDarkToggle").addEventListener("click", function(){
-      toggleTheme(); this.classList.toggle("on");
+    overlay.querySelector("#settingsThemeRow").addEventListener("click", function(){
+      remove();
+      setTimeout(()=> openThemePicker(), 350);
     });
     overlay.querySelector("#settingsClearData").addEventListener("click", ()=>{ remove(); setTimeout(()=>clearAllData(),350); });
   }
 
+  function openThemePicker(){
+    const overlay = document.createElement("div");
+    overlay.className = "overlay";
+    overlay.innerHTML = `
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <h2>Erscheinungsbild</h2>
+        <p class="sheet-sub">Wähle ein Design für die App.</p>
+        <div class="theme-grid" id="themeGrid">
+          ${Object.entries(THEMES).map(([key, t]) => `
+            <button class="theme-option ${key === currentTheme ? 'active' : ''}" data-theme="${key}">
+              <span class="theme-icon">${t.icon}</span>
+              <span class="theme-label">${t.label}</span>
+            </button>
+          `).join('')}
+        </div>
+        <div class="sheet-actions" style="margin-top:18px;">
+          <button class="btn btn-primary" id="closeThemePicker">Fertig</button>
+        </div>
+      </div>
+    `;
+    document.getElementById("app").appendChild(overlay);
+    requestAnimationFrame(()=> overlay.classList.add("show"));
+
+    function remove(){ overlay.classList.remove("show"); setTimeout(()=> overlay.remove(), 300); }
+    overlay.addEventListener("click", e=>{ if(e.target===overlay) remove(); });
+    overlay.querySelector("#closeThemePicker").addEventListener("click", remove);
+
+    overlay.querySelectorAll(".theme-option").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        applyTheme(btn.dataset.theme);
+        overlay.querySelectorAll(".theme-option").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        if(currentList==="mehr") render();
+        showToast(THEMES[btn.dataset.theme]?.label || "Design geändert");
+      });
+    });
+  }
+
   function toggleTheme(){
-    darkMode = !darkMode;
-    document.body.classList.toggle("dark", darkMode);
-    save();
+    // Legacy fallback — cycle through normal themes
+    const cycle = ['normal-light','normal-dark'];
+    const idx = cycle.indexOf(currentTheme);
+    const next = cycle[(idx + 1) % cycle.length];
+    applyTheme(next);
     if(currentList==="mehr"||currentList==="roadmap") render();
-    showToast(darkMode?"Dunkelmodus":"Helles Design");
+    showToast(THEMES[next]?.label || "Design geändert");
   }
 
   function clearAllData(){
     if(!confirm("Alle Aufgaben und Einstellungen unwiderruflich löschen?")) return;
-    tasks = []; meta = {lastReviewDate:null,lastLaterNudge:null,darkMode:false};
-    darkMode=false; document.body.classList.remove("dark");
+    tasks = []; meta = {lastReviewDate:null,lastLaterNudge:null,theme:'normal-light'};
+    applyTheme('normal-light');
+    document.body.classList.remove("dark","solarized","solarized-light","solarized-dark");
     save(); currentList="inbox"; render();
     showToast("Alle Daten gelöscht");
   }
@@ -2058,12 +2630,37 @@
     });
   })();
 
+  // ---------- Klick auf Overlay-Hintergrund schließt Sheet (Desktop) ----------
+  (function(){
+    var closeFns = {
+      addOverlay: function(){ closeAdd(); },
+      editOverlay: function(){ closeEdit(); },
+      reviewOverlay: function(){ closeReview(); },
+      scheduleOverlay: function(){ closeSchedule(); },
+      tagPickerOverlay: function(){ closeTagPicker(); }
+    };
+    Object.keys(closeFns).forEach(function(id){
+      var overlay = document.getElementById(id);
+      if(!overlay) return;
+      overlay.addEventListener("click", function(e){
+        if(e.target === overlay && overlay.classList.contains("show")){
+          closeFns[id]();
+        }
+      });
+    });
+  })();
+
   // ---------- Init ----------
   render();
   maybeShowMorningReview();
   setInterval(()=>{autoPromoteDueTasks();render();},60000);
 
 })();
+</script>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
 </script>
 </body>
 </html>
