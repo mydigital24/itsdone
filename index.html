@@ -29,6 +29,7 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --dock-radius: 28px;
+    --app-height: 100dvh;
     font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   }
   .dark{
@@ -58,11 +59,12 @@
   #app{
     max-width:520px;
     margin:0 auto;
-    height:100dvh;
+    height:var(--app-height);
     display:flex;
     flex-direction:column;
     position:relative;
     background:var(--bg);
+    overflow:hidden;
   }
 
   header{
@@ -102,7 +104,7 @@
   main{
     flex:1;
     overflow-y:auto;
-    padding: 4px 16px calc(100px + var(--safe-bottom));
+    padding: 4px 16px calc(168px + var(--safe-bottom));
     -webkit-overflow-scrolling:touch;
   }
   .empty-state{
@@ -218,8 +220,8 @@
   .dark .nudge{ color: #C9A96A; }
 
   nav{
-    position:absolute; left:12px; right:12px; bottom:0;
-    padding: 8px 6px calc(8px + var(--safe-bottom));
+    position:relative; flex-shrink:0;
+    padding: 8px 6px;
     background: rgba(250,248,244,0.78);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -229,7 +231,6 @@
     justify-content:space-around;
     align-items:center;
     box-shadow: 0 4px 30px rgba(0,0,0,0.06);
-    margin-bottom: 10px;
     z-index:10;
   }
   .dark nav{
@@ -260,23 +261,67 @@
     padding:0 4px;
   }
 
-  .fab{
-    position:absolute;
-    right:24px;
-    bottom: calc(88px + var(--safe-bottom));
-    width:54px; height:54px;
-    border-radius:50%;
-    background:var(--ink);
+  .bottom-dock{
+    position:absolute; left:0; right:0; bottom:0;
+    padding: 0 12px calc(10px + var(--safe-bottom));
+    display:flex; flex-direction:column; gap:10px;
+    z-index:10;
+  }
+  .quickadd-wrap{ position:relative; }
+  .quickadd-bg{
+    position:absolute; inset:0;
+    border-radius:20px;
+    background:var(--sage);
     color:#fff;
-    border:none;
-    box-shadow:0 6px 20px rgba(0,0,0,0.18);
+    display:flex; align-items:center; justify-content:center;
+    gap:8px;
+    font-size:13.5px; font-weight:700;
+    opacity:0; transform:scale(.94);
+    transition:opacity .15s ease, transform .15s ease;
+    pointer-events:none;
+  }
+  .quickadd-bg svg{width:15px;height:15px;}
+  .quickadd-bg.armed{ opacity:1; transform:scale(1); }
+  .quickadd-bar{
+    position:relative; z-index:2;
+    display:flex; align-items:center; gap:10px;
+    background: rgba(250,248,244,0.9);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(233,229,219,0.6);
+    border-radius: 20px;
+    padding: 12px 10px 12px 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    touch-action: pan-y;
+    transition: transform .28s cubic-bezier(.22,1,.36,1);
+  }
+  .dark .quickadd-bar{
+    background: rgba(28,28,26,0.88);
+    border-color: rgba(43,43,40,0.7);
+  }
+  .quickadd-bar.dragging{ transition:none; }
+  .quickadd-bar input{
+    flex:1; min-width:0; border:none; outline:none; background:transparent;
+    font-size:16px; font-family:inherit; color:var(--ink);
+  }
+  .quickadd-bar input::placeholder{ color:var(--ink-faint); }
+  .quickadd-chevron{
+    width:28px; height:28px; border-radius:50%;
+    background:var(--bg); color:var(--ink-soft);
+    border:none; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
-    z-index:5;
-    transition: transform .15s, background .15s;
   }
-  .fab:active{ transform:scale(.9); }
-  .fab svg{width:24px;height:24px;}
+  .quickadd-chevron svg{ width:14px;height:14px; }
+  .quickadd-btn{
+    width:34px; height:34px; border-radius:50%;
+    background:var(--ink); color:#fff; border:none;
+    flex-shrink:0; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition: transform .12s ease;
+  }
+  .quickadd-btn:active{ transform:scale(.9); }
+  .quickadd-btn svg{ width:17px; height:17px; }
 
   .overlay{
     position:absolute; inset:0;
@@ -320,14 +365,90 @@
   textarea.task-input:focus{ outline:2px solid var(--sage); outline-offset:1px; }
 
   .due-row{
+    background:var(--bg); border-radius:var(--radius-sm);
+    padding:12px 14px; margin-bottom:14px;
+  }
+  .due-row .due-row-top{
     display:flex; align-items:center; justify-content:space-between;
+  }
+  .due-row label{ font-size:14.5px; color:var(--ink-soft); display:flex; align-items:center; gap:8px;}
+  .due-row .due-clear{
+    border:none; background:none; color:var(--ink-faint); font-size:13px; cursor:pointer;
+    display:none;
+  }
+  .due-row.has-value .due-clear{ display:block; }
+  .due-quick{
+    display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;
+  }
+  .due-quick button{
+    border:none; background:var(--bg-elevated); color:var(--ink-soft);
+    font-size:12.5px; font-weight:600; padding:7px 12px; border-radius:14px; cursor:pointer;
+    transition: background .12s, color .12s;
+  }
+  .due-quick button.active{ background:var(--sage); color:#fff; }
+  .due-fields{
+    display:flex; gap:8px; margin-top:10px;
+  }
+  .due-fields input[type="date"], .due-fields input[type="time"]{
+    flex:1; border:1px solid var(--line); background:var(--bg-elevated);
+    border-radius:10px; padding:9px 10px; font-family:inherit; font-size:14.5px; color:var(--ink);
+    min-width:0;
+  }
+
+  .notes-field{
+    width:100%; border:none; background:var(--bg); border-radius:var(--radius-sm);
+    padding:12px 14px; font-size:14.5px; font-family:inherit; color:var(--ink);
+    resize:none; min-height:44px; margin-bottom:14px;
+  }
+  .notes-field:focus{ outline:2px solid var(--sage); outline-offset:1px; }
+  .notes-field::placeholder{ color:var(--ink-faint); }
+
+  .tags-field{
     background:var(--bg); border-radius:var(--radius-sm);
     padding:12px 14px; margin-bottom:18px;
   }
-  .due-row label{ font-size:14.5px; color:var(--ink-soft); display:flex; align-items:center; gap:8px;}
-  .due-row input[type="datetime-local"]{
-    border:none; background:transparent; font-family:inherit; font-size:14.5px; color:var(--ink);
+  .tags-field-top{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;
   }
+  .tags-field label{ font-size:14.5px; color:var(--ink-soft); display:flex; align-items:center; gap:8px; }
+  .tags-field-manage{
+    border:none; background:none; color:var(--sage); font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .tags-chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+  .tag-chip{
+    display:inline-flex; align-items:center; gap:5px;
+    padding:5px 10px 5px 9px; border-radius:12px;
+    font-size:12.5px; font-weight:600;
+    cursor:pointer; border:1.4px solid transparent;
+    background:var(--bg-elevated); color:var(--ink-soft);
+    transition: transform .1s ease;
+  }
+  .tag-chip:active{ transform:scale(.95); }
+  .tag-chip .tdot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .tag-chip.selected{ border-color:currentColor; }
+  .tag-chip.add-new{ color:var(--ink-faint); border:1.4px dashed var(--line); background:transparent; }
+  .task-tags-row{ display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+
+  .tags-search{
+    width:100%; border:none; background:var(--bg); border-radius:var(--radius-sm);
+    padding:12px 14px; font-size:15px; font-family:inherit; color:var(--ink); margin-bottom:14px;
+  }
+  .tags-search::placeholder{ color:var(--ink-faint); }
+  .tags-overview-list{ display:flex; flex-direction:column; gap:8px; }
+  .tag-overview-row{
+    display:flex; align-items:center; gap:12px;
+    background:var(--bg-elevated); border-radius:var(--radius); padding:13px 15px;
+    cursor:pointer; border:1px solid var(--line);
+  }
+  .tag-overview-row .tdot{ width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+  .tag-overview-row .to-name{ flex:1; font-size:15px; }
+  .tag-overview-row .to-count{ font-size:12.5px; color:var(--ink-faint); }
+  .tag-back-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .tag-back-btn{
+    width:32px;height:32px;border-radius:50%; border:none; background:var(--bg-elevated);
+    display:flex;align-items:center;justify-content:center; color:var(--ink-soft); cursor:pointer;
+  }
+  .tag-back-btn svg{ width:15px;height:15px; }
 
   .sheet-actions{ display:flex; gap:10px; }
   .btn{
@@ -572,33 +693,47 @@
 
   <main id="listContainer"></main>
 
-  <button class="fab" id="fabAdd" title="Neue Aufgabe">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-  </button>
+  <div class="bottom-dock">
+    <div class="quickadd-wrap" id="quickAddWrap">
+      <div class="quickadd-bg" id="quickAddBg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        <span>Details, Fällig, Notiz & Tags</span>
+      </div>
+      <div class="quickadd-bar" id="quickAddBar">
+        <input type="text" id="quickAddInput" placeholder="Ich brauche …" maxlength="280">
+        <button class="quickadd-chevron" id="quickAddExpand" title="Details hinzufügen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+        </button>
+        <button class="quickadd-btn" id="quickAddBtn" title="Hinzufügen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+    </div>
 
-  <nav>
-    <button class="nav-btn active" data-list="inbox">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v10l-3 6H7l-3-6V4z"/><path d="M4 14h5l1.5 3h3L15 14h5"/></svg>
-      <span>Inbox</span>
-    </button>
-    <button class="nav-btn" data-list="today">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
-      <span>Heute</span>
-    </button>
-    <button class="nav-btn" data-list="later">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
-      <span>Anstehend</span>
-      <span class="nav-badge" id="laterBadge" style="display:none;"></span>
-    </button>
-    <button class="nav-btn" data-list="planner">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-      <span>Planer</span>
-    </button>
-    <button class="nav-btn" data-list="mehr">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-      <span>Mehr</span>
-    </button>
-  </nav>
+    <nav>
+      <button class="nav-btn active" data-list="inbox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v10l-3 6H7l-3-6V4z"/><path d="M4 14h5l1.5 3h3L15 14h5"/></svg>
+        <span>Inbox</span>
+      </button>
+      <button class="nav-btn" data-list="today">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+        <span>Heute</span>
+      </button>
+      <button class="nav-btn" data-list="later">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+        <span>Anstehend</span>
+        <span class="nav-badge" id="laterBadge" style="display:none;"></span>
+      </button>
+      <button class="nav-btn" data-list="planner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        <span>Planer</span>
+      </button>
+      <button class="nav-btn" data-list="mehr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        <span>Mehr</span>
+      </button>
+    </nav>
+  </div>
 
   <!-- Add sheet -->
   <div class="overlay" id="addOverlay">
@@ -607,13 +742,39 @@
       <h2>Neue Aufgabe</h2>
       <p class="sheet-sub">Bei Fälligkeitsdatum direkt in Anstehend.</p>
       <textarea class="task-input" id="taskInput" placeholder="Was steht an?" maxlength="280"></textarea>
-      <div class="due-row">
-        <label>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-          Fällig
-        </label>
-        <input type="datetime-local" id="dueInput">
+
+      <div class="due-row" id="addDueRow">
+        <div class="due-row-top">
+          <label>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            Fällig
+          </label>
+          <button class="due-clear" id="addDueClear">Entfernen</button>
+        </div>
+        <div class="due-quick" id="addDueQuick">
+          <button type="button" data-q="today">Heute</button>
+          <button type="button" data-q="tomorrow">Morgen</button>
+          <button type="button" data-q="week">In 1 Woche</button>
+        </div>
+        <div class="due-fields">
+          <input type="date" id="addDueDateInput">
+          <input type="time" id="addDueTimeInput">
+        </div>
       </div>
+
+      <textarea class="notes-field" id="notesInput" placeholder="Notiz (optional)" maxlength="500"></textarea>
+
+      <div class="tags-field">
+        <div class="tags-field-top">
+          <label>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L11 3.83A2 2 0 009.59 3H4a1 1 0 00-1 1v5.59a2 2 0 00.59 1.41l9.58 9.58a2 2 0 002.83 0l4.59-4.59a2 2 0 000-2.83z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+            Tags
+          </label>
+          <button class="tags-field-manage" id="addTagsManage">Verwalten</button>
+        </div>
+        <div class="tags-chip-row" id="addTagsChipRow"></div>
+      </div>
+
       <div class="sheet-actions">
         <button class="btn btn-secondary" id="cancelAdd">Abbrechen</button>
         <button class="btn btn-primary" id="confirmAdd">Hinzufügen</button>
@@ -628,13 +789,39 @@
       <h2>Aufgabe bearbeiten</h2>
       <p class="sheet-sub">Text und Fälligkeitsdatum anpassen.</p>
       <textarea class="task-input" id="editInput" placeholder="Aufgabe" maxlength="280"></textarea>
-      <div class="due-row">
-        <label>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-          Fällig
-        </label>
-        <input type="datetime-local" id="editDueInput">
+
+      <div class="due-row" id="editDueRow">
+        <div class="due-row-top">
+          <label>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            Fällig
+          </label>
+          <button class="due-clear" id="editDueClear">Entfernen</button>
+        </div>
+        <div class="due-quick" id="editDueQuick">
+          <button type="button" data-q="today">Heute</button>
+          <button type="button" data-q="tomorrow">Morgen</button>
+          <button type="button" data-q="week">In 1 Woche</button>
+        </div>
+        <div class="due-fields">
+          <input type="date" id="editDueDateInput">
+          <input type="time" id="editDueTimeInput">
+        </div>
       </div>
+
+      <textarea class="notes-field" id="editNotesInput" placeholder="Notiz (optional)" maxlength="500"></textarea>
+
+      <div class="tags-field">
+        <div class="tags-field-top">
+          <label>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L11 3.83A2 2 0 009.59 3H4a1 1 0 00-1 1v5.59a2 2 0 00.59 1.41l9.58 9.58a2 2 0 002.83 0l4.59-4.59a2 2 0 000-2.83z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+            Tags
+          </label>
+          <button class="tags-field-manage" id="editTagsManage">Verwalten</button>
+        </div>
+        <div class="tags-chip-row" id="editTagsChipRow"></div>
+      </div>
+
       <div class="sheet-actions">
         <button class="btn btn-secondary" id="cancelEdit">Abbrechen</button>
         <button class="btn btn-primary" id="confirmEdit">Speichern</button>
@@ -670,16 +857,41 @@
       <div class="sheet-handle"></div>
       <h2>Termin planen</h2>
       <p class="sheet-sub" id="scheduleTaskText"></p>
-      <div class="due-row">
-        <label>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-          Fällig
-        </label>
-        <input type="datetime-local" id="scheduleDueInput">
+      <div class="due-row" id="scheduleDueRow">
+        <div class="due-row-top">
+          <label>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            Fällig
+          </label>
+          <button class="due-clear" id="scheduleDueClear">Entfernen</button>
+        </div>
+        <div class="due-quick" id="scheduleDueQuick">
+          <button type="button" data-q="today">Heute</button>
+          <button type="button" data-q="tomorrow">Morgen</button>
+          <button type="button" data-q="week">In 1 Woche</button>
+        </div>
+        <div class="due-fields">
+          <input type="date" id="scheduleDueDateInput">
+          <input type="time" id="scheduleDueTimeInput">
+        </div>
       </div>
       <div class="sheet-actions">
         <button class="btn btn-secondary" id="cancelSchedule">Abbrechen</button>
         <button class="btn btn-primary" id="confirmSchedule">Übernehmen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tag picker sheet -->
+  <div class="overlay" id="tagPickerOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2>Tags</h2>
+      <p class="sheet-sub">Tippe zum Auswählen, oder erstelle einen neuen Tag.</p>
+      <input type="text" class="tags-search" id="tagPickerSearch" placeholder="Tag suchen oder neu erstellen …" maxlength="24">
+      <div class="tags-chip-row" id="tagPickerList" style="margin-bottom:18px;"></div>
+      <div class="sheet-actions">
+        <button class="btn btn-primary" id="tagPickerDone">Fertig</button>
       </div>
     </div>
   </div>
@@ -693,11 +905,17 @@
 
   const STORAGE_KEY = "klar_tasks_v2";
   const META_KEY = "klar_meta_v2";
+  const TAGS_KEY = "klar_tags_v1";
   const NUDGE_DAYS = 3;
+  const TAG_COLORS = ["sage","blue","orange","plan","amber","danger"];
 
   let tasks = load(STORAGE_KEY, []);
+  tasks.forEach(t=>{ if(t.notes===undefined) t.notes=null; if(!Array.isArray(t.tags)) t.tags=[]; });
+  let tagsList = load(TAGS_KEY, []);
   let meta = load(META_KEY, { lastReviewDate: null, lastLaterNudge: null, darkMode: false });
   let currentList = "inbox";
+  let subView = null; // null | "tags" | "tagdetail"
+  let tagDetailId = null;
   let darkMode = meta.darkMode || false;
 
   if(darkMode) document.body.classList.add("dark");
@@ -710,9 +928,78 @@
     meta.darkMode = darkMode;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     localStorage.setItem(META_KEY, JSON.stringify(meta));
+    localStorage.setItem(TAGS_KEY, JSON.stringify(tagsList));
   }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function todayStr(d){ d=d||new Date(); return d.toISOString().slice(0,10); }
+
+  // ---------- Tags ----------
+  function findTag(id){ return tagsList.find(x=>x.id===id); }
+  function getOrCreateTagByName(name){
+    name = name.trim();
+    if(!name) return null;
+    const existing = tagsList.find(x=>x.name.toLowerCase()===name.toLowerCase());
+    if(existing) return existing;
+    const tag = { id: uid(), name, color: TAG_COLORS[tagsList.length % TAG_COLORS.length] };
+    tagsList.push(tag); save();
+    return tag;
+  }
+  function tagTaskCount(tagId){
+    return tasks.filter(t=>!t.done && Array.isArray(t.tags) && t.tags.includes(tagId)).length;
+  }
+
+  // ---------- Date/Time helpers (native picker replaced with split date+time for iOS reliability) ----------
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function isoToDateStr(iso){ const d=new Date(iso); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+  function isoToTimeStr(iso){ const d=new Date(iso); return pad2(d.getHours())+':'+pad2(d.getMinutes()); }
+  function combineDateTime(dateStr, timeStr){
+    if(!dateStr) return null;
+    const t = timeStr && timeStr.length ? timeStr : "09:00";
+    const d = new Date(dateStr+"T"+t+":00");
+    if(isNaN(d.getTime())) return null;
+    return d.toISOString();
+  }
+  function dateStrOffset(days){
+    const d = new Date(); d.setDate(d.getDate()+days);
+    return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+  }
+
+  // Wires up a due-row's quick chips + date/time fields + clear button.
+  // getVal/setVal operate on {date,time} strings.
+  function setupDueRow(prefix){
+    const row = document.getElementById(prefix+"DueRow");
+    const dateInput = document.getElementById(prefix+"DueDateInput");
+    const timeInput = document.getElementById(prefix+"DueTimeInput");
+    const clearBtn = document.getElementById(prefix+"DueClear");
+    const quickWrap = document.getElementById(prefix+"DueQuick");
+
+    function refreshState(){
+      row.classList.toggle("has-value", !!dateInput.value);
+      quickWrap.querySelectorAll("button").forEach(b=>{
+        const target = b.dataset.q==="today"?dateStrOffset(0):b.dataset.q==="tomorrow"?dateStrOffset(1):dateStrOffset(7);
+        b.classList.toggle("active", dateInput.value===target);
+      });
+    }
+    quickWrap.querySelectorAll("button").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const days = b.dataset.q==="today"?0:b.dataset.q==="tomorrow"?1:7;
+        dateInput.value = dateStrOffset(days);
+        if(!timeInput.value) timeInput.value = "09:00";
+        refreshState();
+      });
+    });
+    dateInput.addEventListener("change", refreshState);
+    clearBtn.addEventListener("click", ()=>{ dateInput.value=""; timeInput.value=""; refreshState(); });
+    return {
+      setValue(iso){
+        dateInput.value = iso ? isoToDateStr(iso) : "";
+        timeInput.value = iso ? isoToTimeStr(iso) : "";
+        refreshState();
+      },
+      getValue(){ return combineDateTime(dateInput.value, timeInput.value); },
+      reset(){ dateInput.value=""; timeInput.value=""; refreshState(); }
+    };
+  }
 
   function autoPromoteDueTasks(){
     const now = new Date();
@@ -840,6 +1127,11 @@
         <div class="mc-text"><strong>Roadmap</strong><span>Anstehende Aufgaben im Wochen-Überblick</span></div>
         <span class="mc-arrow">›</span>
       </div>
+      <div class="mehr-card" id="mehrTags">
+        <div class="mc-icon roadmap">🏷️</div>
+        <div class="mc-text"><strong>Tags</strong><span>Aufgaben nach Tag durchsuchen & verwalten</span></div>
+        <span class="mc-arrow">›</span>
+      </div>
       <div class="mehr-card" id="mehrTheme">
         <div class="mc-icon theme">${darkMode?'🌙':'☀️'}</div>
         <div class="mc-text"><strong>Erscheinungsbild</strong><span>${darkMode?'Dunkles':'Helles'} Design</span></div>
@@ -860,6 +1152,7 @@
 
     document.getElementById("mehrReview").addEventListener("click", ()=>openReview(false));
     document.getElementById("mehrRoadmap").addEventListener("click", renderRoadmapView);
+    document.getElementById("mehrTags").addEventListener("click", ()=>{ subView="tags"; render(); });
     document.getElementById("mehrTheme").addEventListener("click", toggleTheme);
     document.getElementById("mehrSettings").addEventListener("click", openSettingsSheet);
     document.getElementById("mehrAbout").addEventListener("click", ()=>showToast("its_done 2.0 — Einfach erledigt."));
@@ -933,6 +1226,77 @@
       });
       listContainer.appendChild(weekDiv);
     });
+  }
+
+  // ---------- Tags Übersicht ----------
+  let tagsSearchQuery = "";
+  function renderTagsView(){
+    listTitle.textContent = "Tags";
+    subline.textContent = "Tippe auf einen Tag, um zugehörige Aufgaben zu sehen.";
+    listContainer.innerHTML = "";
+
+    const back = document.createElement("div"); back.className="tag-back-row";
+    back.innerHTML = '<button class="tag-back-btn" id="tagsBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button><span style="font-size:13px;color:var(--ink-soft);">Zurück zu Mehr</span>';
+    listContainer.appendChild(back);
+    document.getElementById("tagsBack").addEventListener("click", ()=>{ subView=null; render(); });
+
+    const search = document.createElement("input");
+    search.type="text"; search.className="tags-search"; search.placeholder="Tag suchen …";
+    search.value = tagsSearchQuery;
+    search.addEventListener("input", ()=>{ tagsSearchQuery=search.value; renderList(); });
+    listContainer.appendChild(search);
+
+    const listWrap = document.createElement("div"); listWrap.className="tags-overview-list";
+    listContainer.appendChild(listWrap);
+
+    function renderList(){
+      listWrap.innerHTML="";
+      const q = tagsSearchQuery.trim().toLowerCase();
+      const filtered = tagsList.filter(t=>t.name.toLowerCase().includes(q));
+      if(!filtered.length){
+        const empty=document.createElement("div"); empty.className="empty-state";
+        empty.innerHTML='<div class="glyph">🏷️</div><p>'+(tagsList.length?"Kein Tag gefunden.":"Noch keine Tags erstellt. Lege beim Erstellen oder Bearbeiten einer Aufgabe welche an.")+'</p>';
+        listWrap.appendChild(empty);
+        return;
+      }
+      filtered.forEach(tag=>{
+        const row=document.createElement("div"); row.className="tag-overview-row";
+        row.innerHTML = '<span class="tdot" style="background:var(--'+tag.color+')"></span>'+
+          '<span class="to-name">'+escapeHtml(tag.name)+'</span>'+
+          '<span class="to-count">'+tagTaskCount(tag.id)+'</span>';
+        row.addEventListener("click", ()=>{ tagDetailId=tag.id; subView="tagdetail"; render(); });
+        listWrap.appendChild(row);
+      });
+    }
+    renderList();
+  }
+
+  function renderTagDetailView(){
+    const tag = findTag(tagDetailId);
+    if(!tag){ subView="tags"; renderTagsView(); return; }
+    listTitle.textContent = tag.name;
+    subline.textContent = "Alle Aufgaben mit diesem Tag.";
+    listContainer.innerHTML = "";
+
+    const back = document.createElement("div"); back.className="tag-back-row";
+    back.innerHTML = '<button class="tag-back-btn" id="tagDetailBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="tdot" style="background:var(--'+tag.color+')"></span><span style="font-size:13px;color:var(--ink-soft);">Zurück zu Tags</span>';
+    listContainer.appendChild(back);
+    document.getElementById("tagDetailBack").addEventListener("click", ()=>{ subView="tags"; render(); });
+
+    const items = tasks.filter(t=>Array.isArray(t.tags) && t.tags.includes(tag.id)).sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      if(a.due && b.due) return new Date(a.due)-new Date(b.due);
+      if(a.due) return -1; if(b.due) return 1;
+      return a.created - b.created;
+    });
+
+    if(!items.length){
+      const empty=document.createElement("div"); empty.className="empty-state";
+      empty.innerHTML='<div class="glyph">🏷️</div><p>Noch keine Aufgabe mit diesem Tag.</p>';
+      listContainer.appendChild(empty);
+      return;
+    }
+    items.forEach(t=>listContainer.appendChild(renderRow(t,{noActions:true})));
   }
 
   // ---------- Settings-Sheet ----------
@@ -1016,6 +1380,8 @@
     else { laterBadge.style.display="none"; }
 
     if(currentList==="planner"){ renderPlannerView(); return; }
+    if(currentList==="mehr" && subView==="tags"){ renderTagsView(); return; }
+    if(currentList==="mehr" && subView==="tagdetail"){ renderTagDetailView(); return; }
     if(currentList==="mehr"){ renderMehrView(); return; }
 
     const titles = { inbox:"Inbox", today:"Heute", later:"Anstehend" };
@@ -1071,16 +1437,17 @@
   let editTaskId = null;
   const editOverlay = document.getElementById("editOverlay");
   const editInput = document.getElementById("editInput");
-  const editDueInput = document.getElementById("editDueInput");
+  const editNotesInput = document.getElementById("editNotesInput");
+  const editDue = setupDueRow("edit");
+  let editDraftTags = [];
 
   function openEdit(t){
     editTaskId = t.id;
     editInput.value = t.text;
-    editDueInput.value = t.due ? (()=>{
-      const d = new Date(t.due);
-      const pad=n=>String(n).padStart(2,"0");
-      return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
-    })() : "";
+    editNotesInput.value = t.notes || "";
+    editDue.setValue(t.due);
+    editDraftTags = Array.isArray(t.tags) ? t.tags.slice() : [];
+    renderDraftTagChips("editTagsChipRow", editDraftTags).addEventListener("click", ()=>openTagPicker("edit"));
     editOverlay.classList.add("show");
     setTimeout(()=>editInput.focus(),260);
   }
@@ -1088,13 +1455,16 @@
 
   document.getElementById("cancelEdit").addEventListener("click", closeEdit);
   editOverlay.addEventListener("click", e=>{ if(e.target===editOverlay) closeEdit(); });
+  document.getElementById("editTagsManage").addEventListener("click", ()=>openTagPicker("edit"));
   document.getElementById("confirmEdit").addEventListener("click", ()=>{
     const text = editInput.value.trim();
     if(!text) return;
     const task = tasks.find(x=>x.id===editTaskId);
     if(!task) return;
     task.text = text;
-    task.due = editDueInput.value ? new Date(editDueInput.value).toISOString() : null;
+    task.due = editDue.getValue();
+    task.notes = editNotesInput.value.trim() || null;
+    task.tags = editDraftTags.slice();
     save(); closeEdit(); render();
     showToast("Aufgabe aktualisiert");
   });
@@ -1140,10 +1510,24 @@
     const main = document.createElement("div"); main.className="task-main";
     const txt = document.createElement("div"); txt.className="task-text"; txt.textContent=t.text;
     main.appendChild(txt);
-    if(t.due){
+    if(t.due || t.notes){
       const meta = document.createElement("div"); meta.className="task-meta "+metaClass(t);
-      meta.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> '+fmtDue(t.due);
+      let metaHtml = "";
+      if(t.due) metaHtml += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> '+fmtDue(t.due);
+      if(t.notes) metaHtml += (t.due?' · ':'') + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 4h16v12H8l-4 4V4z"/></svg>';
+      meta.innerHTML = metaHtml;
       main.appendChild(meta);
+    }
+    if(Array.isArray(t.tags) && t.tags.length){
+      const tagsRow = document.createElement("div"); tagsRow.className="task-tags-row";
+      t.tags.forEach(tid=>{
+        const tag=findTag(tid); if(!tag) return;
+        const chip=document.createElement("span"); chip.className="tag-chip";
+        chip.style.color="var(--"+tag.color+")";
+        chip.innerHTML='<span class="tdot" style="background:var(--'+tag.color+')"></span>'+escapeHtml(tag.name);
+        tagsRow.appendChild(chip);
+      });
+      main.appendChild(tagsRow);
     }
     // Click to edit
     main.addEventListener("click", ()=>{ if(!opts.simple) openEdit(t); });
@@ -1257,48 +1641,200 @@
 
   // ---------- Nav ----------
   document.querySelectorAll(".nav-btn").forEach(btn=>{
-    btn.addEventListener("click",()=>{currentList=btn.dataset.list;render();});
+    btn.addEventListener("click",()=>{currentList=btn.dataset.list;subView=null;render();});
   });
+
+  // ---------- Tag chip rendering helpers ----------
+  function renderDraftTagChips(containerId, tagIds){
+    const el=document.getElementById(containerId);
+    el.innerHTML="";
+    tagIds.forEach(id=>{
+      const tag=findTag(id); if(!tag) return;
+      const chip=document.createElement("span");
+      chip.className="tag-chip selected";
+      chip.style.color="var(--"+tag.color+")";
+      chip.innerHTML='<span class="tdot" style="background:var(--'+tag.color+')"></span>'+escapeHtml(tag.name);
+      el.appendChild(chip);
+    });
+    const addChip=document.createElement("span");
+    addChip.className="tag-chip add-new";
+    addChip.textContent = tagIds.length ? "+ Bearbeiten" : "+ Tag hinzufügen";
+    el.appendChild(addChip);
+    return addChip;
+  }
+
+  // ---------- Tag picker sheet ----------
+  const tagPickerOverlay=document.getElementById("tagPickerOverlay");
+  const tagPickerSearch=document.getElementById("tagPickerSearch");
+  const tagPickerList=document.getElementById("tagPickerList");
+  let tagPickerTarget=null, tagPickerSelected=[];
+
+  function renderTagPickerList(){
+    tagPickerList.innerHTML="";
+    const q=tagPickerSearch.value.trim().toLowerCase();
+    tagsList.filter(t=>t.name.toLowerCase().includes(q)).forEach(tag=>{
+      const sel=tagPickerSelected.includes(tag.id);
+      const chip=document.createElement("span");
+      chip.className="tag-chip"+(sel?" selected":"");
+      chip.style.color="var(--"+tag.color+")";
+      chip.innerHTML='<span class="tdot" style="background:var(--'+tag.color+')"></span>'+escapeHtml(tag.name);
+      chip.addEventListener("click",()=>{
+        tagPickerSelected = sel ? tagPickerSelected.filter(x=>x!==tag.id) : tagPickerSelected.concat(tag.id);
+        renderTagPickerList();
+      });
+      tagPickerList.appendChild(chip);
+    });
+    if(q && !tagsList.some(t=>t.name.toLowerCase()===q)){
+      const chip=document.createElement("span");
+      chip.className="tag-chip add-new";
+      chip.textContent='+ „'+tagPickerSearch.value.trim()+'“ erstellen';
+      chip.addEventListener("click",()=>{
+        const tag=getOrCreateTagByName(tagPickerSearch.value.trim());
+        if(tag && !tagPickerSelected.includes(tag.id)) tagPickerSelected.push(tag.id);
+        tagPickerSearch.value=""; renderTagPickerList();
+      });
+      tagPickerList.appendChild(chip);
+    }
+  }
+  function openTagPicker(target){
+    tagPickerTarget=target;
+    tagPickerSelected=(target==="add"?addDraftTags:editDraftTags).slice();
+    tagPickerSearch.value="";
+    renderTagPickerList();
+    tagPickerOverlay.classList.add("show");
+  }
+  function closeTagPicker(){ tagPickerOverlay.classList.remove("show"); tagPickerTarget=null; }
+  function commitTagPicker(){
+    if(tagPickerTarget==="add"){
+      addDraftTags=tagPickerSelected.slice();
+      renderDraftTagChips("addTagsChipRow",addDraftTags).addEventListener("click",()=>openTagPicker("add"));
+    } else if(tagPickerTarget==="edit"){
+      editDraftTags=tagPickerSelected.slice();
+      renderDraftTagChips("editTagsChipRow",editDraftTags).addEventListener("click",()=>openTagPicker("edit"));
+    }
+    closeTagPicker(); save();
+  }
+  tagPickerSearch.addEventListener("input", renderTagPickerList);
+  tagPickerSearch.addEventListener("keydown", e=>{
+    if(e.key==="Enter"){
+      e.preventDefault();
+      const val=tagPickerSearch.value.trim();
+      if(!val) return;
+      const tag=getOrCreateTagByName(val);
+      if(tag && !tagPickerSelected.includes(tag.id)) tagPickerSelected.push(tag.id);
+      tagPickerSearch.value=""; renderTagPickerList();
+    }
+  });
+  document.getElementById("tagPickerDone").addEventListener("click", commitTagPicker);
+  tagPickerOverlay.addEventListener("click", e=>{ if(e.target===tagPickerOverlay) commitTagPicker(); });
 
   // ---------- Add sheet ----------
   const addOverlay=document.getElementById("addOverlay");
   const taskInput=document.getElementById("taskInput");
-  const dueInput=document.getElementById("dueInput");
+  const notesInput=document.getElementById("notesInput");
+  const addDue=setupDueRow("add");
+  let addDraftTags=[];
 
-  function openAdd(){addOverlay.classList.add("show");taskInput.value="";dueInput.value="";setTimeout(()=>taskInput.focus(),260);}
+  function openAdd(prefillText){
+    addOverlay.classList.add("show");
+    taskInput.value=prefillText||"";
+    notesInput.value="";
+    addDue.reset();
+    addDraftTags=[];
+    renderDraftTagChips("addTagsChipRow",addDraftTags).addEventListener("click",()=>openTagPicker("add"));
+    setTimeout(()=>taskInput.focus(),260);
+  }
   function closeAdd(){addOverlay.classList.remove("show");}
-  document.getElementById("fabAdd").addEventListener("click",openAdd);
   document.getElementById("cancelAdd").addEventListener("click",closeAdd);
   addOverlay.addEventListener("click",e=>{if(e.target===addOverlay)closeAdd();});
+  document.getElementById("addTagsManage").addEventListener("click",()=>openTagPicker("add"));
 
   document.getElementById("confirmAdd").addEventListener("click",()=>{
     const text=taskInput.value.trim();
     if(!text) return;
-    const due=dueInput.value?new Date(dueInput.value).toISOString():null;
+    const due=addDue.getValue();
+    const notes=notesInput.value.trim()||null;
     // Mit Fälligkeitsdatum → direkt nach "later", sonst in Inbox
-    tasks.push({id:uid(),text,list:due?"later":"inbox",due,done:false,created:Date.now()});
+    tasks.push({id:uid(),text,list:due?"later":"inbox",due,notes,tags:addDraftTags.slice(),done:false,created:Date.now()});
     save(); closeAdd();
-    currentList=due?"later":"inbox"; render();
+    currentList=due?"later":"inbox"; subView=null; render();
     showToast(due?"Zu Anstehend hinzugefügt":"Zur Inbox hinzugefügt");
   });
+
+  // ---------- Quick-add bar (Bring!-Stil) ----------
+  const quickAddBar=document.getElementById("quickAddBar");
+  const quickAddInput=document.getElementById("quickAddInput");
+  const quickAddBg=document.getElementById("quickAddBg");
+  const quickAddExpand=document.getElementById("quickAddExpand");
+  const quickAddBtn=document.getElementById("quickAddBtn");
+
+  function quickAdd(){
+    const text=quickAddInput.value.trim();
+    if(!text) return;
+    tasks.push({id:uid(),text,list:"inbox",due:null,notes:null,tags:[],done:false,created:Date.now()});
+    save(); quickAddInput.value="";
+    if(currentList==="inbox") render();
+    showToast("Zur Inbox hinzugefügt");
+  }
+  quickAddBtn.addEventListener("click", quickAdd);
+  quickAddInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); quickAdd(); } });
+  quickAddExpand.addEventListener("click", ()=>{ const t=quickAddInput.value; quickAddInput.value=""; openAdd(t); });
+
+  // Swipe up on the bar itself → opens full sheet with due date, notes & tags
+  (function(){
+    let startY=0, dy=0, dragging=false;
+    const threshold=42;
+    function updateVisual(d){
+      quickAddBar.style.transform = d<0 ? `translateY(${Math.max(d,-46)}px)` : "translateY(0)";
+      const p=Math.min(Math.abs(Math.min(d,0))/threshold,1);
+      quickAddBg.style.opacity=p; quickAddBg.style.transform=`scale(${0.92+p*0.08})`;
+      quickAddBg.classList.toggle("armed", p>=1);
+    }
+    function reset(){
+      quickAddBar.style.transform="translateY(0)";
+      quickAddBg.style.opacity=0; quickAddBg.classList.remove("armed");
+    }
+    function commit(d){
+      if(d<=-threshold){ const t=quickAddInput.value; quickAddInput.value=""; reset(); openAdd(t); }
+      else reset();
+    }
+    quickAddBar.addEventListener("touchstart", e=>{
+      if(e.target.closest("input,button")) return;
+      startY=e.touches[0].clientY; dragging=true; quickAddBar.classList.add("dragging");
+    },{passive:true});
+    quickAddBar.addEventListener("touchmove", e=>{
+      if(!dragging) return;
+      dy=e.touches[0].clientY-startY; if(dy>0) dy*=0.2;
+      updateVisual(dy);
+    },{passive:true});
+    quickAddBar.addEventListener("touchend", ()=>{ dragging=false; quickAddBar.classList.remove("dragging"); commit(dy); dy=0; });
+
+    let md=false;
+    quickAddBar.addEventListener("mousedown", e=>{
+      if(e.target.closest("input,button")) return;
+      md=true; startY=e.clientY; quickAddBar.classList.add("dragging");
+    });
+    window.addEventListener("mousemove", e=>{ if(!md) return; dy=e.clientY-startY; if(dy>0) dy*=0.2; updateVisual(dy); });
+    window.addEventListener("mouseup", ()=>{ if(!md) return; md=false; quickAddBar.classList.remove("dragging"); commit(dy); dy=0; });
+  })();
 
   // ---------- Schedule sheet ----------
   const scheduleOverlay=document.getElementById("scheduleOverlay");
   const scheduleTaskText=document.getElementById("scheduleTaskText");
-  const scheduleDueInput=document.getElementById("scheduleDueInput");
+  const scheduleDue=setupDueRow("schedule");
   let scheduleTaskId=null;
 
   function openSchedule(t){
     scheduleTaskId=t.id; scheduleTaskText.textContent=t.text;
-    scheduleDueInput.value=t.due?(()=>{const d=new Date(t.due);const pad=n=>String(n).padStart(2,"0");return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());})():"";
-    scheduleOverlay.classList.add("show"); setTimeout(()=>scheduleDueInput.focus(),260);
+    scheduleDue.setValue(t.due);
+    scheduleOverlay.classList.add("show");
   }
   function closeSchedule(){scheduleOverlay.classList.remove("show");scheduleTaskId=null;}
   document.getElementById("cancelSchedule").addEventListener("click",closeSchedule);
   scheduleOverlay.addEventListener("click",e=>{if(e.target===scheduleOverlay)closeSchedule();});
   document.getElementById("confirmSchedule").addEventListener("click",()=>{
     const task=tasks.find(x=>x.id===scheduleTaskId); if(!task) return;
-    task.due=scheduleDueInput.value?new Date(scheduleDueInput.value).toISOString():null;
+    task.due=scheduleDue.getValue();
     save(); closeSchedule(); render();
     showToast("Termin geplant");
   });
@@ -1364,6 +1900,22 @@
     if(now.getHours()>=7&&now.getHours()<9&&meta.lastReviewDate!==todayStr())
       setTimeout(()=>openReview(true),400);
   }
+
+  // ---------- iOS Tastatur-Fix ----------
+  // Verhindert, dass Dock/Menüleiste nach Tastatur-Eingabe verrutschen: statt starrem
+  // 100dvh wird die tatsächliche sichtbare Höhe live über die VisualViewport-API gesetzt.
+  function setAppHeight(){
+    const h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    document.documentElement.style.setProperty("--app-height", h + "px");
+  }
+  setAppHeight();
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize", setAppHeight);
+    window.visualViewport.addEventListener("scroll", setAppHeight);
+  } else {
+    window.addEventListener("resize", setAppHeight);
+  }
+  window.addEventListener("orientationchange", ()=>setTimeout(setAppHeight,120));
 
   // ---------- Init ----------
   render();
