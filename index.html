@@ -1799,7 +1799,8 @@
   }
   quickAddBtn.addEventListener("click", quickAdd);
   quickAddInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); quickAdd(); } });
-  quickAddExpand.addEventListener("click", ()=>{ const t=quickAddInput.value; quickAddInput.value=""; openAdd(t); });
+  quickAddInput.addEventListener("focus", ()=>{ const t=quickAddInput.value; quickAddInput.blur(); openAdd(t); });
+  quickAddExpand.addEventListener("click", e=>{ e.stopPropagation(); const t=quickAddInput.value; openAdd(t); });
 
   // Swipe up on the bar itself → opens full sheet with due date, notes & tags
   (function(){
@@ -2010,6 +2011,50 @@
       if(dy > 80 && el.scrollTop <= 0){
         window.location.reload();
       }
+    });
+  })();
+
+  // ---------- Swipe-Down-to-Close für alle Sheets ----------
+  (function(){
+    const closeFns = {
+      addOverlay: function(){ closeAdd(); },
+      editOverlay: function(){ closeEdit(); },
+      reviewOverlay: function(){ closeReview(); },
+      scheduleOverlay: function(){ closeSchedule(); },
+      tagPickerOverlay: function(){ closeTagPicker(); }
+    };
+    Object.keys(closeFns).forEach(function(id){
+      var overlay = document.getElementById(id);
+      if(!overlay) return;
+      var sheet = overlay.querySelector(".sheet");
+      if(!sheet) return;
+      var handle = overlay.querySelector(".sheet-handle");
+      var startY = 0, dragging = false;
+      var target = handle || sheet;
+      target.addEventListener("touchstart", function(e){
+        if(!overlay.classList.contains("show")) return;
+        startY = e.touches[0].clientY;
+        dragging = true;
+        sheet.style.transition = "none";
+      }, {passive:true});
+      target.addEventListener("touchmove", function(e){
+        if(!dragging) return;
+        var dy = e.touches[0].clientY - startY;
+        if(dy < 0) dy = 0;
+        sheet.style.transform = "translateY(" + dy + "px)";
+        overlay.style.opacity = Math.max(0, 1 - dy / 300);
+      }, {passive:true});
+      target.addEventListener("touchend", function(e){
+        if(!dragging) return;
+        dragging = false;
+        sheet.style.transition = "";
+        var dy = e.changedTouches[0].clientY - startY;
+        if(dy > 100){
+          closeFns[id]();
+        }
+        sheet.style.transform = "";
+        overlay.style.opacity = "";
+      });
     });
   })();
 
