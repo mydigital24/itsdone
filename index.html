@@ -46,6 +46,7 @@
     --orange-soft: #2E1E14;
     --plan-soft: #1C1A2E;
   }
+  @viewport{ interactive-widget: overlays-content; }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{height:100%;}
   body{
@@ -1913,20 +1914,26 @@
   }
 
   // ---------- iOS Tastatur-Fix ----------
-  // Verhindert, dass Dock/Menüleiste nach Tastatur-Eingabe verrutschen: statt starrem
-  // 100dvh wird die tatsächliche sichtbare Höhe live über die VisualViewport-API gesetzt.
+  // Tastatur überlagert UI statt sie zu verkleinern.
+  // Nutzt window.innerHeight (Layout-Viewport, ändert sich nicht bei Tastatur).
+  // So bleibt die App in voller Höhe; die Tastatur legt sich darüber.
   function setAppHeight(){
-    const h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-    document.documentElement.style.setProperty("--app-height", h + "px");
+    document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
   }
   setAppHeight();
-  if(window.visualViewport){
-    window.visualViewport.addEventListener("resize", setAppHeight);
-    window.visualViewport.addEventListener("scroll", setAppHeight);
-  } else {
-    window.addEventListener("resize", setAppHeight);
-  }
+  window.addEventListener("resize", setAppHeight);
   window.addEventListener("orientationchange", ()=>setTimeout(setAppHeight,120));
+
+  // Fokussierte Eingabefelder in Sheets/überall in den sichtbaren Bereich scrollen
+  function ensureInputVisible(el){
+    setTimeout(() => {
+      if(document.activeElement === el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 380);
+  }
+  document.addEventListener("focusin", e => {
+    const t = e.target;
+    if(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) ensureInputVisible(t);
+  });
 
   // ---------- Init ----------
   render();
