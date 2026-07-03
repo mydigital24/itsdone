@@ -290,10 +290,16 @@
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid rgba(233,229,219,0.6);
     border-radius: 20px;
-    padding: 12px 10px 12px 18px;
+    padding: 18px 10px 12px 18px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.06);
     touch-action: pan-y;
     transition: transform .28s cubic-bezier(.22,1,.36,1);
+  }
+  .quickadd-handle{
+    position:absolute; top:7px; left:50%; transform:translateX(-50%);
+    width:34px; height:4px; border-radius:2px;
+    background:var(--line);
+    pointer-events:none;
   }
   .dark .quickadd-bar{
     background: rgba(28,28,26,0.88);
@@ -700,7 +706,8 @@
         <span>Details, Fällig, Notiz & Tags</span>
       </div>
       <div class="quickadd-bar" id="quickAddBar">
-        <input type="text" id="quickAddInput" placeholder="Ich brauche …" maxlength="280">
+        <div class="quickadd-handle"></div>
+        <input type="text" id="quickAddInput" placeholder="Meine Aufgabe …" maxlength="280">
         <button class="quickadd-chevron" id="quickAddExpand" title="Details hinzufügen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
         </button>
@@ -1103,7 +1110,7 @@
       empty.innerHTML = '<div class="glyph">📅</div><p>Für diesen Tag ist nichts geplant.</p>';
       listContainer.appendChild(empty);
     } else {
-      dayTasks.sort((a,b)=>new Date(a.due)-new Date(b.due)).forEach(t=>listContainer.appendChild(renderRow(t,{simple:true,noActions:true})));
+      dayTasks.sort((a,b)=>new Date(a.due)-new Date(b.due)).forEach(t=>listContainer.appendChild(renderRow(t,{crossList:true})));
     }
   }
 
@@ -1296,7 +1303,7 @@
       listContainer.appendChild(empty);
       return;
     }
-    items.forEach(t=>listContainer.appendChild(renderRow(t,{noActions:true})));
+    items.forEach(t=>listContainer.appendChild(renderRow(t,{crossList:true})));
   }
 
   // ---------- Settings-Sheet ----------
@@ -1473,13 +1480,17 @@
   function renderRow(t, opts){
     opts = opts || {};
     const wrap = document.createElement("div"); wrap.className = "task-row-wrap";
+    // In "Cross-List"-Ansichten (Planer, Tag-Details) richten sich Gesten & Buttons
+    // nach der tatsächlichen Liste der Aufgabe, nicht nach der aktuell offenen Ansicht —
+    // so verhält sich jede Aufgabe überall genauso wie in der Inbox.
+    const refList = opts.crossList ? t.list : currentList;
 
     const swipeConfig = {
       inbox: { left: "today", leftSuper: true, right: "later" },
       later: { left: "today", right: null },
       today: { left: "inbox", right: "later", rightSuper: true }
     };
-    const cfg = swipeConfig[currentList] || {};
+    const cfg = swipeConfig[refList] || {};
     const swipable = !opts.simple && (cfg.left || cfg.right || cfg.leftSuper || cfg.rightSuper);
 
     if(swipable){
@@ -1536,19 +1547,19 @@
 
     if(!opts.simple && !opts.noActions){
       // Buttons für alle Ansichten: zeige alle relevanten Verschiebe-Optionen
-      if(currentList!=="today"){
+      if(refList!=="today"){
         const b=document.createElement("button"); b.className="to-today";
         b.title="Nach Heute"; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>';
         b.addEventListener("click",e=>{e.stopPropagation();t.list="today";save();render();showToast("Nach Heute");});
         actions.appendChild(b);
       }
-      if(currentList!=="later"){
+      if(refList!=="later"){
         const b=document.createElement("button"); b.className="to-later";
         b.title="Nach Anstehend"; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>';
         b.addEventListener("click",e=>{e.stopPropagation();t.list="later";save();render();showToast("Nach Anstehend");});
         actions.appendChild(b);
       }
-      if(currentList!=="inbox"){
+      if(refList!=="inbox"){
         const b=document.createElement("button"); b.className="to-inbox";
         b.title="Zurück in Inbox"; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v10l-3 6H7l-3-6V4z"/><path d="M4 14h5l1.5 3h3L15 14h5"/></svg>';
         b.addEventListener("click",e=>{e.stopPropagation();t.list="inbox";save();render();showToast("Zurück in Inbox");});
