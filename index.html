@@ -29,7 +29,7 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --dock-radius: 28px;
-    --app-height: 100dvh;
+    --app-height: 100vh;
     font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   }
   .dark{
@@ -1913,26 +1913,15 @@
       setTimeout(()=>openReview(true),400);
   }
 
-  // ---------- iOS Tastatur-Fix ----------
-  // Tastatur überlagert UI statt sie zu verkleinern.
-  // Nutzt window.innerHeight (Layout-Viewport, ändert sich nicht bei Tastatur).
-  // So bleibt die App in voller Höhe; die Tastatur legt sich darüber.
-  function setAppHeight(){
-    document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
-  }
-  setAppHeight();
-  window.addEventListener("resize", setAppHeight);
-  window.addEventListener("orientationchange", ()=>setTimeout(setAppHeight,120));
-
-  // Fokussierte Eingabefelder in Sheets/überall in den sichtbaren Bereich scrollen
-  function ensureInputVisible(el){
-    setTimeout(() => {
-      if(document.activeElement === el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }, 380);
-  }
+  // ---------- iOS Tastatur-Overlay ----------
+  // Fokussierte Eingabefelder in den sichtbaren Bereich scrollen
   document.addEventListener("focusin", e => {
     const t = e.target;
-    if(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) ensureInputVisible(t);
+    if(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")){
+      setTimeout(() => {
+        if(document.activeElement === t) t.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 380);
+    }
   });
 
   // ---------- Init ----------
